@@ -1,0 +1,13 @@
+# IntelliJ project files
+.idea
+*.iml
+out
+gen
+
+# DeepBC files
+!data/README.md
+data/
+
+## pre-trained models
+!pretrained_models/README.md
+pretrained_models/
