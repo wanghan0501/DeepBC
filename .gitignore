@@ -5,9 +5,11 @@ out
 gen
 
 # DeepBC files
-!data/README.md
-data/
+!/data/README.md
+/data/
 
 ## pre-trained models
-!pretrained_models/README.md
-pretrained_models/
+!/pretrained_models/README.md
+/pretrained_models/
+
+
