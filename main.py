@@ -137,7 +137,7 @@ with tf.Session() as sess:
         if max_test_acc < avg_test_acc:
           max_test_acc_epoch = epoch_idx
           max_test_acc = avg_test_acc
-          model_save_path = model_save_prefix + 'epoch_{}_acc_{:.4f}'.format(epoch_idx, avg_test_acc)
+          model_save_path = model_save_prefix + 'epoch_{}_acc_{:.4f}.ckpt'.format(epoch_idx, avg_test_acc)
           save_path = saver.save(sess, model_save_path)
           logger.info('Epoch {} model has been saved with test accuracy is {:.4f}'.format(epoch_idx, avg_test_acc))
         logger.info('Epoch {} test accuracy is {:.4f}. the max test accuracy is {:.4f} at epoch {}'.format(epoch_idx,
@@ -145,7 +145,7 @@ with tf.Session() as sess:
                                                                                                            max_test_acc,
                                                                                                            max_test_acc_epoch))
 
-  saver.save(sess, model_save_prefix + 'epoch_end')
+  saver.save(sess, model_save_prefix + 'epoch_end.ckpt')
   logger.info('Final model has been saved')
   coord.request_stop()
   coord.join(threads)
