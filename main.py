@@ -122,7 +122,7 @@ with tf.Session() as sess:
                                                                                       np.average(train_acc_array)))
     # test
     test_acc_array = []
-    for batch_idx in range(model_config.test_data_length):
+    for batch_idx in range(int(model_config.test_data_length / model_config.batch_size)):
       curr_test_image, curr_test_label = sess.run([test_batch_images, test_batch_labels])
       test_feed_dict = {model._input_data: curr_test_image,
                         model._dropout_keep_prob: model_config.dropout_keep_prob,
