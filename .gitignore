@@ -6,16 +6,18 @@ gen
 __pycache__/
 
 # DeepBC files
-/data/
-!/data/README.md
+data/images/
+data/tfdata/
+data/labels.txt
 
 ## pre-trained models
-/pretrained_models/
-!/pretrained_models/README.md
-
+pretrained_models/inception_resnet_v2.ckpt
+pretrained_models/inception_v2.ckpt
+pretrained_models/inception_v3.ckpt
+pretrained_models/resnet_v2_50.ckpt
 
 logs/
 saved_models/
 summary/
-data/
+
 

@@ -67,7 +67,7 @@ if model_config.model_name == 'inception_resnet_v2':
   model_config_info = str(model_config) + \
                       'unrestored_var_list:\t{}\n' \
                       'model_path:\t{}\n' \
-                      'model_save_prefix\t{}\n'.format(
+                      'model_save_prefix:\t{}\n'.format(
                         unrestored_var_list,
                         model_path,
                         model_save_prefix
@@ -90,7 +90,7 @@ with tf.Session() as sess:
   trainabled = 0
   for var in tf.trainable_variables():
     trainabled += 1
-    logger.info('the number of trainabled variables is {}'.format(trainabled))
+  logger.info('the number of trainabled variables is {}'.format(trainabled))
 
   coord = tf.train.Coordinator()
   threads = tf.train.start_queue_runners(sess, coord=coord)
@@ -118,8 +118,8 @@ with tf.Session() as sess:
       if batch_idx % model_config.plot_batch == 0:
         writer.add_summary(curr_summary, epoch_idx * model_config.max_epoch + batch_idx)
         logger.info('Epoch {} train loss is: {:.4f}, train accuracy is {:.4f}'.format(epoch_idx,
-                                                                                      np.average(train_acc_array),
-                                                                                      np.average(loss_array)))
+                                                                                      np.average(loss_array),
+                                                                                      np.average(train_acc_array)))
     # test
     test_acc_array = []
     for batch_idx in range(model_config.test_data_length):
