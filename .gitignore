@@ -3,13 +3,19 @@
 *.iml
 out
 gen
+__pycache__/
 
 # DeepBC files
-!/data/README.md
 /data/
+!/data/README.md
 
 ## pre-trained models
-!/pretrained_models/README.md
 /pretrained_models/
+!/pretrained_models/README.md
 
+
+logs/
+saved_models/
+summary/
+data/
 

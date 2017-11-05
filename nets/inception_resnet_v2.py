@@ -24,7 +24,6 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import print_function
 
-
 import tensorflow as tf
 
 slim = tf.contrib.slim
@@ -187,7 +186,7 @@ def inception_resnet_v2_base(inputs,
           tower_pool_1 = slim.conv2d(tower_pool, 64, 1,
                                      scope='Conv2d_0b_1x1')
         net = tf.concat(
-            [tower_conv, tower_conv1_1, tower_conv2_2, tower_pool_1], 3)
+          [tower_conv, tower_conv1_1, tower_conv2_2, tower_pool_1], 3)
 
       if add_and_check_final('Mixed_5b', net): return net, end_points
       # TODO(alemi): Register intermediate endpoints
@@ -252,7 +251,7 @@ def inception_resnet_v2_base(inputs,
                                        padding=padding,
                                        scope='MaxPool_1a_3x3')
         net = tf.concat(
-            [tower_conv_1, tower_conv1_1, tower_conv2_2, tower_pool], 3)
+          [tower_conv_1, tower_conv1_1, tower_conv2_2, tower_pool], 3)
 
       if add_and_check_final('Mixed_7a', net): return net, end_points
 
@@ -267,8 +266,9 @@ def inception_resnet_v2_base(inputs,
     raise ValueError('final_endpoint (%s) not recognized', final_endpoint)
 
 
-def inception_resnet_v2(inputs, num_classes=1001, is_training=True,
-                        dropout_keep_prob=0.8,
+def inception_resnet_v2(inputs, is_training,
+                        dropout_keep_prob,
+                        num_classes=1001,
                         reuse=None,
                         scope='InceptionResnetV2',
                         create_aux_logits=True):
@@ -277,8 +277,8 @@ def inception_resnet_v2(inputs, num_classes=1001, is_training=True,
   Args:
     inputs: a 4-D tensor of size [batch_size, height, width, 3].
     num_classes: number of predicted classes.
-    is_training: whether is training or not.
-    dropout_keep_prob: float, the fraction to keep before final layer.
+    is_training: whether is training or not. It's a placeholder.
+    dropout_keep_prob: float, the fraction to keep before final layer. It's a placeholder.
     reuse: whether or not the network and its variables should be reused. To be
       able to reuse 'scope' must be given.
     scope: Optional variable_scope.
@@ -294,7 +294,6 @@ def inception_resnet_v2(inputs, num_classes=1001, is_training=True,
                          reuse=reuse) as scope:
     with slim.arg_scope([slim.batch_norm, slim.dropout],
                         is_training=is_training):
-
       net, end_points = inception_resnet_v2_base(inputs, scope=scope)
 
       if create_aux_logits:
@@ -325,6 +324,8 @@ def inception_resnet_v2(inputs, num_classes=1001, is_training=True,
         end_points['Predictions'] = tf.nn.softmax(logits, name='Predictions')
 
     return logits, end_points
+
+
 inception_resnet_v2.default_image_size = 299
 
 
@@ -345,10 +346,9 @@ def inception_resnet_v2_arg_scope(weight_decay=0.00004,
   with slim.arg_scope([slim.conv2d, slim.fully_connected],
                       weights_regularizer=slim.l2_regularizer(weight_decay),
                       biases_regularizer=slim.l2_regularizer(weight_decay)):
-
     batch_norm_params = {
-        'decay': batch_norm_decay,
-        'epsilon': batch_norm_epsilon,
+      'decay': batch_norm_decay,
+      'epsilon': batch_norm_epsilon,
     }
     # Set activation_fn and parameters for batch_norm.
     with slim.arg_scope([slim.conv2d], activation_fn=tf.nn.relu,
