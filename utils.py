@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-  
 
 from __future__ import print_function
+from __future__ import absolute_import
 
 """
 Created by Wang Han on 2017/11/5 11:19.
@@ -8,8 +9,6 @@ E-mail address is hanwang.0501@gmail.com.
 Copyright © 2017 Wang Han. SCU. All Rights Reserved.
 """
 import logging
-
-import datetime
 
 
 class ModelConfig():
@@ -68,18 +67,20 @@ class ModelConfig():
 
 
 class Logger():
-  def __init__(self, level=logging.DEBUG,
+  def __init__(self, filename, level=logging.DEBUG,
                format='%(asctime)s %(filename)s[line:%(lineno)d] %(levelname)s %(message)s',
-               datefmt='%a, %d %b %Y %H:%M:%S', filename='', filemode='a'):
+               datefmt='%a, %d %b %Y %H:%M:%S', filemode='w'):
     self.level = level
     self.format = format
     self.datefmt = datefmt
-    self.filename = filename if filename != '' else 'logs/' + str(datetime.datetime.now()) + '.log'
-    self.filemode = filemode
-    self._set_streaming_handler()
-
-  def set_filename(self, filename):
     self.filename = filename
+    self.filemode = filemode
+    logging.basicConfig(level=self.level,
+                        format=self.format,
+                        datefmt=self.datefmt,
+                        filename=self.filename,
+                        filemode=self.filemode)
+    self._set_streaming_handler()
 
   def _set_streaming_handler(self, level=logging.INFO, formatter='%(name)-12s: %(levelname)-8s %(message)s'):
     # 定义一个StreamHandler，将INFO级别或更高的日志信息打印到标准错误，并将其添加到当前的日志处理对象#
@@ -90,9 +91,4 @@ class Logger():
     logging.getLogger('').addHandler(console)
 
   def get_logger(self):
-    logging.basicConfig(level=self.level,
-                        format=self.format,
-                        datefmt=self.datefmt,
-                        filename=self.filename,
-                        filemode=self.filemode)
     return logging

@@ -44,7 +44,7 @@ def get_restored_vars(exclusions):
 # get model config
 model_config = ModelConfig(model_name='inception_resnet_v2')
 # get logging
-logger = Logger().get_logger()
+logger = Logger(filename='logs/{}_{}.log'.format(model_config.model_name, str(datetime.datetime.now()))).get_logger()
 # get train batch data
 train_batch_images, train_batch_labels = get_shuffle_batch('data/tfdata/bc_train.tfrecords', model_config)
 # get test batch data
