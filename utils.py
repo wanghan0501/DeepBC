@@ -13,9 +13,9 @@ import logging
 
 class ModelConfig():
   def __init__(self,
-               batch_size=50,
+               batch_size=100,
                num_classes=2,
-               max_epoch=15,
+               max_epoch=10,
                plot_batch=5,
                img_shape=(299, 299, 3),
                dropout_keep_prob=0.35,

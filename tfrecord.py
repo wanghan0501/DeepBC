@@ -2,6 +2,9 @@
 
 from __future__ import print_function
 
+from preprocessing import PreProcess
+from utils import Logger
+
 """
 Created by Wang Han on 2017/11/3 10:44.
 E-mail address is hanwang.0501@gmail.com.
@@ -18,9 +21,10 @@ import numpy as np
 def _read_image(img_path, img_shape=(299, 299, 3)):
   if img_path is None:
     raise Exception("Invalid image path")
-  original_image = cv2.imread(img_path)
-  new_image = cv2.resize(original_image, (img_shape[0], img_shape[1]), interpolation=cv2.INTER_CUBIC)
-  return new_image
+    # original_image = cv2.imread(img_path)
+    # new_image = cv2.resize(original_image, (img_shape[0], img_shape[1]), interpolation=cv2.INTER_CUBIC)
+    # return new_image
+  return cv2.imread(img_path)
 
 
 def _int64_feature(value):
@@ -32,27 +36,30 @@ def _bytes_feature(value):
 
 
 def write_to_tfrecord(file_name, datas, labels, img_shape=(299, 299, 3)):
-  if os.path.exists(file_name):
-    print('The data file %s exists !!' % file_name)
-    return
+  dir_name = os.path.dirname(file_name)
+  logger = Logger(filename=dir_name + '/tfrecord.log', filemode='a').get_logger()
 
+  if os.path.exists(file_name):
+    logger.info('The data file {} exists !!'.format(file_name))
+    return
+  expand_num = 3
   writer = tf.python_io.TFRecordWriter(file_name)
   for i in range(len(datas)):
     if not i % 100:
-      print('Write data: %f %% ' % ((float(i) / len(datas)) * 100))
+      logger.info('Write data: {} %% '.format((float(i) / len(datas)) * 100))
     img = _read_image(datas[i])
-
     if img is None:
       continue
-
-    img = img.astype(np.uint8)
-    label = labels[i]
-    feature = {'label': _int64_feature(label),
-               'image': _bytes_feature(img.tobytes())}
-    example = tf.train.Example(features=tf.train.Features(feature=feature))
-    writer.write(example.SerializeToString())
+    preprocessor = PreProcess(in_img=img, out_shape=img_shape, expand_num=expand_num)
+    for item in preprocessor.get_processing_output():
+      img = img.astype(np.uint8)
+      label = labels[i]
+      feature = {'label': _int64_feature(label),
+                 'image': _bytes_feature(img.tobytes())}
+      example = tf.train.Example(features=tf.train.Features(feature=feature))
+      writer.write(example.SerializeToString())
   writer.close()
-  print('Data file %s finished writing!' % file_name)
+  logger.info('Data file {} finished writing! Total record number is {}'.format(file_name, len(datas) * expand_num))
 
 
 def read_from_tfrecord(filename_queue, img_shape=(299, 299, 3), img_type=tf.uint8, name='read_tfrecord'):

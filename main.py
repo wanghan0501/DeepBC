@@ -53,8 +53,8 @@ test_batch_images, test_batch_labels = get_shuffle_batch('data/tfdata/bc_test.tf
                                                          name='test_shuffle_batch')
 
 # set train
-model_config.train_data_length = 2805
-model_config.test_data_length = 701
+model_config.train_data_length = 8415
+model_config.test_data_length = 2103
 
 model = None
 unrestored_var_list = None
