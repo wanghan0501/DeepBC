@@ -55,24 +55,26 @@ def write_to_tfrecord(file_name, datas, labels, img_shape=(299, 299, 3)):
   print('Data file %s finished writing!' % file_name)
 
 
-def read_from_tfrecord(filename_queue, img_shape=(299, 299, 3), img_type=tf.uint8):
-  reader = tf.TFRecordReader()
-  _, serialized_example = reader.read(filename_queue)
-  features = tf.parse_single_example(serialized_example,
-                                     features={'label': tf.FixedLenFeature([], tf.int64),
-                                               'image': tf.FixedLenFeature([], tf.string)})
-  image = tf.decode_raw(features['image'], img_type)
-  image = tf.reshape(image, img_shape)
-  label = tf.cast(features['label'], dtype=tf.int64, name='label')
-  return image, label
+def read_from_tfrecord(filename_queue, img_shape=(299, 299, 3), img_type=tf.uint8, name='read_tfrecord'):
+  with tf.name_scope(name=name):
+    reader = tf.TFRecordReader()
+    _, serialized_example = reader.read(filename_queue)
+    features = tf.parse_single_example(serialized_example,
+                                       features={'label': tf.FixedLenFeature([], tf.int64),
+                                                 'image': tf.FixedLenFeature([], tf.string)})
+    image = tf.decode_raw(features['image'], img_type)
+    image = tf.reshape(image, img_shape)
+    label = tf.cast(features['label'], dtype=tf.int64, name='label')
+    return image, label
 
 
-def get_shuffle_batch(filename, model_config):
-  queue = tf.train.string_input_producer([filename])
-  curr_image, curr_label = read_from_tfrecord(queue)
-  batch_images, batch_labels = tf.train.shuffle_batch([curr_image, curr_label],
-                                                      batch_size=model_config.batch_size,
-                                                      capacity=10000 + model_config.batch_size * 3,
-                                                      num_threads=model_config.num_threads,
-                                                      min_after_dequeue=10)
-  return batch_images, batch_labels
+def get_shuffle_batch(filename, model_config, name='shuffle_batch'):
+  with tf.name_scope(name=name):
+    queue = tf.train.string_input_producer([filename])
+    curr_image, curr_label = read_from_tfrecord(queue)
+    batch_images, batch_labels = tf.train.shuffle_batch([curr_image, curr_label],
+                                                        batch_size=model_config.batch_size,
+                                                        capacity=10000 + model_config.batch_size * 3,
+                                                        num_threads=model_config.num_threads,
+                                                        min_after_dequeue=10)
+    return batch_images, batch_labels

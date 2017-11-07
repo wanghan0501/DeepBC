@@ -16,7 +16,7 @@ import tensorflow as tf
 import numpy as np
 
 from model import InceptionResnetV2Model
-from tfrecord import read_from_tfrecord, get_shuffle_batch
+from tfrecord import get_shuffle_batch
 from utils import Logger, ModelConfig
 
 os.environ["CUDA_VISIBLE_DEVICES"] = '1'
@@ -46,9 +46,11 @@ model_config = ModelConfig(model_name='inception_resnet_v2')
 # get logging
 logger = Logger(filename='logs/{}_{}.log'.format(model_config.model_name, str(datetime.datetime.now()))).get_logger()
 # get train batch data
-train_batch_images, train_batch_labels = get_shuffle_batch('data/tfdata/bc_train.tfrecords', model_config)
+train_batch_images, train_batch_labels = get_shuffle_batch('data/tfdata/bc_train.tfrecords', model_config,
+                                                           name='train_shuffle_batch')
 # get test batch data
-test_batch_images, test_batch_labels = get_shuffle_batch('data/tfdata/bc_test.tfrecords', model_config)
+test_batch_images, test_batch_labels = get_shuffle_batch('data/tfdata/bc_test.tfrecords', model_config,
+                                                         name='test_shuffle_batch')
 
 # set train
 model_config.train_data_length = 2805
@@ -67,7 +69,8 @@ if model_config.model_name == 'inception_resnet_v2':
   model_config_info = str(model_config) + \
                       'unrestored_var_list:\t{}\n' \
                       'model_path:\t{}\n' \
-                      'model_save_prefix:\t{}\n'.format(
+                      'model_save_prefix:\t{}\n' \
+                      '**********\n'.format(
                         unrestored_var_list,
                         model_path,
                         model_save_prefix

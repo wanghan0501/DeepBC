@@ -13,12 +13,12 @@ import logging
 
 class ModelConfig():
   def __init__(self,
-               batch_size=32,
+               batch_size=50,
                num_classes=2,
                max_epoch=15,
                plot_batch=5,
                img_shape=(299, 299, 3),
-               dropout_keep_prob=0.5,
+               dropout_keep_prob=0.35,
                train_data_length=0,
                validation_data_length=0,
                test_data_length=0,
@@ -37,14 +37,14 @@ class ModelConfig():
     self.model_name = model_name
 
   def __str__(self):
-    str = '**********\n' \
+    str = '\n**********\n' \
           'Model Configuration Parameters as Following:\n' \
           'batch_size:\t{} \n' \
           'num_classes:\t{}\n' \
           'max_epoch:\t{}\n' \
           'plot_batch:\t{}\n' \
           'img_shape:\t{}\n' \
-          'dropout_keep_prob:\t{}' \
+          'dropout_keep_prob:\t{}\n' \
           'train_data_length:\t{}\n' \
           'validation_data_length:\t{}\n' \
           'test_data_length is:\t{}\n' \
