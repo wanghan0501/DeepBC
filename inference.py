@@ -71,7 +71,7 @@ def breast_diagnosis():
   except ValueError:
     logger.error('Inferencing failed')
     json_dict = {'diagnose': 'null', 'prob_cancer': 0.0, 'prob_no_cancer': 0.0, 'code': 0}
-  return
+  return json.dump(json_dict)
 
 
 def _restore_model():
