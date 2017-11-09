@@ -11,7 +11,7 @@ import cv2
 
 
 class PreProcess():
-  def __init__(self, in_img, out_shape, expand_num=3):
+  def __init__(self, in_img, out_shape, expand_num=2):
     self.in_img = in_img
     self.out_shape = out_shape
     self.expand_num = expand_num

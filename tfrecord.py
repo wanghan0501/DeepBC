@@ -37,15 +37,18 @@ def _bytes_feature(value):
   return tf.train.Feature(bytes_list=tf.train.BytesList(value=[value]))
 
 
-def write_to_tfrecord(file_name, datas, labels, img_shape=(299, 299, 3)):
+def write_to_tfrecord(file_name, datas, labels, img_shape=(299, 299, 3), data_expand=False, expand_rate=2):
   dir_name = os.path.dirname(file_name)
   logger = Logger(filename=dir_name + '/tfrecord.log', filemode='a').get_logger()
 
   if os.path.exists(file_name):
     logger.info('The data file {} exists !!'.format(file_name))
     return
-  # 扩展的倍率
-  expand_num = 2
+  if data_expand:
+    # 扩展的倍率
+    expand_num = expand_rate
+  else:
+    expand_num = 0
   writer = tf.python_io.TFRecordWriter(file_name)
   for i in range(len(datas)):
     if not i % 100:
