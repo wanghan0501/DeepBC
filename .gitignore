@@ -7,8 +7,11 @@ __pycache__/
 
 # DeepBC files
 data/images/
-data/tfdata/
 data/labels.txt
+data/tfdata/
+data/old_images/
+data/old_labels.txt
+
 
 ## pre-trained models
 pretrained_models/inception_resnet_v2.ckpt
@@ -16,8 +19,17 @@ pretrained_models/inception_v2.ckpt
 pretrained_models/inception_v3.ckpt
 pretrained_models/resnet_v2_50.ckpt
 
+# logs
 logs/
+
+# saved models
 saved_models/
+
+# tensorboard summary
 summary/
 
-
+# project files
+*.pyc
+*.ipynb
+recheck_list.csv
+recheck_list_1.txt

@@ -37,7 +37,7 @@ class InceptionResnetV2Model(object):
                                                is_training=self._is_training,
                                                dropout_keep_prob=self._dropout_keep_prob,
                                                num_classes=self._config.num_classes,
-                                               create_aux_logits=False)
+                                               create_aux_logits=True)
     predictions = end_points['Predictions']
     one_hot_labels = tf.one_hot(indices=tf.cast(self._label, tf.int32), depth=self._config.num_classes,
                                 name='one_hot_labels')
