@@ -2,6 +2,8 @@
 
 from __future__ import print_function
 
+import pdb
+
 from preprocessing import PreProcess
 from utils import Logger
 
@@ -42,7 +44,8 @@ def write_to_tfrecord(file_name, datas, labels, img_shape=(299, 299, 3)):
   if os.path.exists(file_name):
     logger.info('The data file {} exists !!'.format(file_name))
     return
-  expand_num = 3
+  # 扩展的倍率
+  expand_num = 2
   writer = tf.python_io.TFRecordWriter(file_name)
   for i in range(len(datas)):
     if not i % 100:
@@ -52,14 +55,15 @@ def write_to_tfrecord(file_name, datas, labels, img_shape=(299, 299, 3)):
       continue
     preprocessor = PreProcess(in_img=img, out_shape=img_shape, expand_num=expand_num)
     for item in preprocessor.get_processing_output():
-      img = img.astype(np.uint8)
+      image = item.astype(np.uint8)
       label = labels[i]
       feature = {'label': _int64_feature(label),
-                 'image': _bytes_feature(img.tobytes())}
+                 'image': _bytes_feature(image.tobytes())}
       example = tf.train.Example(features=tf.train.Features(feature=feature))
       writer.write(example.SerializeToString())
   writer.close()
-  logger.info('Data file {} finished writing! Total record number is {}'.format(file_name, len(datas) * expand_num))
+  logger.info(
+    'Data file {} finished writing! Total record number is {}'.format(file_name, len(datas) * (expand_num + 1)))
 
 
 def read_from_tfrecord(filename_queue, img_shape=(299, 299, 3), img_type=tf.uint8, name='read_tfrecord'):

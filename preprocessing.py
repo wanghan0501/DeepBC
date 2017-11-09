@@ -8,7 +8,6 @@ Copyright © 2017 Wang Han. SCU. All Rights Reserved.
 import numpy as np
 import random
 import cv2
-from matplotlib import pyplot as plt
 
 
 class PreProcess():
@@ -46,6 +45,7 @@ class PreProcess():
 
   def get_processing_output(self):
     out_array = []
+    out_array.append(self._resize(in_img=self.in_img))
     for i in range(self.expand_num):
       tmp = self.in_img
       # 是否翻转
