@@ -42,7 +42,7 @@ def get_restored_vars(exclusions):
 
 
 # get model config
-model_config = ModelConfig(model_name='inception_resnet_v2')
+model_config = ModelConfig(model_name='inception_resnet_v2', dropout_keep_prob=0.5)
 # get logging
 logger = Logger(filename='logs/{}_{}.log'.format(model_config.model_name, str(datetime.datetime.now()))).get_logger()
 # get train batch data

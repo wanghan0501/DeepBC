@@ -18,7 +18,7 @@ class ModelConfig():
                max_epoch=10,
                plot_batch=5,
                img_shape=(299, 299, 3),
-               dropout_keep_prob=0.35,
+               dropout_keep_prob=0.5,
                train_data_length=0,
                validation_data_length=0,
                test_data_length=0,
