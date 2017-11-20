@@ -23,7 +23,8 @@ class ModelConfig():
                validation_data_length=0,
                test_data_length=0,
                num_threads=30,
-               model_name='inception_resnet_v2'):
+               model_name='inception_resnet_v2',
+               use_tensorboard=False):
     self.batch_size = batch_size
     self.num_classes = num_classes
     self.max_epoch = max_epoch
@@ -35,6 +36,7 @@ class ModelConfig():
     self.test_data_length = test_data_length
     self.num_threads = num_threads
     self.model_name = model_name
+    self.use_tensorboard = use_tensorboard
 
   def __str__(self):
     str = '\n**********\n' \
@@ -50,6 +52,7 @@ class ModelConfig():
           'test_data_length is:\t{}\n' \
           'num_threads:\t{}\n' \
           'model_name:\t{}\n' \
+          'use_tensorboard:\t{}\n' \
           '**********\n'.format(
       self.batch_size,
       self.num_classes,
@@ -61,7 +64,8 @@ class ModelConfig():
       self.validation_data_length,
       self.test_data_length,
       self.num_threads,
-      self.model_name
+      self.model_name,
+      self.use_tensorboard
     )
     return str
 

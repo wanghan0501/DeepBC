@@ -42,7 +42,7 @@ def get_restored_vars(exclusions):
 
 
 # get model config
-model_config = ModelConfig(model_name='inception_resnet_v2', dropout_keep_prob=0.5)
+model_config = ModelConfig(model_name='inception_resnet_v2', dropout_keep_prob=0.35)
 # get logging
 logger = Logger(filename='logs/{}_{}.log'.format(model_config.model_name, str(datetime.datetime.now()))).get_logger()
 # get train batch data
@@ -113,13 +113,19 @@ with tf.Session() as sess:
       curr_loss = None
       curr_summary = None
       if model_config.model_name == 'inception_resnet_v2':
-        _, curr_train_acc, curr_loss, curr_summary = sess.run(
-          [model._train_op, model._accuracy, model._loss, model._summary],
-          feed_dict=train_feed_dict)
+        if model_config.use_tensorboard:
+          _, curr_train_acc, curr_loss, curr_summary = sess.run(
+            [model._train_op, model._accuracy, model._loss, model._summary],
+            feed_dict=train_feed_dict)
+        else:
+          _, curr_train_acc, curr_loss = sess.run(
+            [model._train_op, model._accuracy, model._loss],
+            feed_dict=train_feed_dict)
       train_acc_array.append(curr_train_acc)
       loss_array.append(curr_loss)
       if batch_idx % model_config.plot_batch == 0:
-        writer.add_summary(curr_summary, epoch_idx * model_config.max_epoch + batch_idx)
+        if model_config.use_tensorboard:
+          writer.add_summary(curr_summary, epoch_idx * model_config.max_epoch + batch_idx)
         logger.info('Epoch {} train loss is: {:.4f}, train accuracy is {:.4f}'.format(epoch_idx,
                                                                                       np.average(loss_array),
                                                                                       np.average(train_acc_array)))
@@ -135,18 +141,19 @@ with tf.Session() as sess:
       if model_config.model_name == 'inception_resnet_v2':
         cur_test_acc = sess.run(model._accuracy, feed_dict=test_feed_dict)
       test_acc_array.append(cur_test_acc)
-      if batch_idx % model_config.plot_batch == 0:
-        avg_test_acc = np.average(test_acc_array)
-        if max_test_acc < avg_test_acc:
-          max_test_acc_epoch = epoch_idx
-          max_test_acc = avg_test_acc
-          model_save_path = model_save_prefix + 'epoch_{}_acc_{:.4f}.ckpt'.format(epoch_idx, avg_test_acc)
-          save_path = saver.save(sess, model_save_path)
-          logger.info('Epoch {} model has been saved with test accuracy is {:.4f}'.format(epoch_idx, avg_test_acc))
-        logger.info('Epoch {} test accuracy is {:.4f}. the max test accuracy is {:.4f} at epoch {}'.format(epoch_idx,
-                                                                                                           avg_test_acc,
-                                                                                                           max_test_acc,
-                                                                                                           max_test_acc_epoch))
+
+    # for the whole test dataset
+    avg_test_acc = np.average(test_acc_array)
+    if max_test_acc < avg_test_acc:
+      max_test_acc_epoch = epoch_idx
+      max_test_acc = avg_test_acc
+      model_save_path = model_save_prefix + 'epoch_{}_acc_{:.4f}.ckpt'.format(epoch_idx, avg_test_acc)
+      save_path = saver.save(sess, model_save_path)
+      logger.info('Epoch {} model has been saved with test accuracy is {:.4f}'.format(epoch_idx, avg_test_acc))
+    logger.info('Epoch {} test accuracy is {:.4f}. the max test accuracy is {:.4f} at epoch {}'.format(epoch_idx,
+                                                                                                       avg_test_acc,
+                                                                                                       max_test_acc,
+                                                                                                       max_test_acc_epoch))
 
   saver.save(sess, model_save_prefix + 'epoch_end.ckpt')
   logger.info('Final model has been saved')

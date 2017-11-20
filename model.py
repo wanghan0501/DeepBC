@@ -21,6 +21,7 @@ class InceptionResnetV2Model(object):
     self._config = config
     self._input_shape = (config.batch_size,) + config.img_shape
     self._output_shape = (config.batch_size,)
+    self._use_tensorboard = config.use_tensorboard
     if is_training:
       self._create_model()
 
@@ -44,7 +45,8 @@ class InceptionResnetV2Model(object):
     with tf.name_scope("loss"):
       # set loss
       loss = tf.nn.softmax_cross_entropy_with_logits(labels=one_hot_labels, logits=logits, name='loss')
-      tf.summary.histogram("loss", loss)
+      if self._use_tensorboard:
+        tf.summary.histogram("loss", loss)
     with tf.name_scope('train'):
       # set optimizer
       optimizer = tf.train.AdamOptimizer(learning_rate=0.001)
@@ -56,13 +58,16 @@ class InceptionResnetV2Model(object):
       # get curr accuracy
       accuracy = tf.reduce_mean(tf.cast(tf.equal(tf.cast(self._label, tf.int64), cur_classes), tf.float32),
                                 name='accuracy')
-      tf.summary.scalar('accuracy', accuracy)
-    # merge all info
-    summary = tf.summary.merge_all()
+      if self._use_tensorboard:
+        tf.summary.scalar('accuracy', accuracy)
+    if self._use_tensorboard:
+      # merge all info
+      summary = tf.summary.merge_all()
 
     self._loss = loss
     self._train_op = train_op
     self._accuracy = accuracy
     self._cur_classes = cur_classes
     self._predictions = predictions
-    self._summary = summary
+    if self._use_tensorboard:
+      self._summary = summary
