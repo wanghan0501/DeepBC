@@ -2,8 +2,6 @@
 
 from __future__ import print_function
 
-import pdb
-
 from preprocessing import PreProcess
 from utils import Logger
 
@@ -37,9 +35,10 @@ def _bytes_feature(value):
   return tf.train.Feature(bytes_list=tf.train.BytesList(value=[value]))
 
 
-def write_to_tfrecord(file_name, datas, labels, img_shape=(299, 299, 3), data_expand=False, expand_rate=2):
+def write_to_tfrecord(file_name, datas, labels, logger=None, img_shape=(299, 299, 3), data_expand=False, expand_rate=2):
   dir_name = os.path.dirname(file_name)
-  logger = Logger(filename=dir_name + '/tfrecord.log', filemode='a').get_logger()
+  if logger is None:
+    logger = Logger(filename=dir_name + '/tfrecord.log', filemode='a').get_logger()
 
   if os.path.exists(file_name):
     logger.info('The data file {} exists !!'.format(file_name))
@@ -52,7 +51,7 @@ def write_to_tfrecord(file_name, datas, labels, img_shape=(299, 299, 3), data_ex
   writer = tf.python_io.TFRecordWriter(file_name)
   for i in range(len(datas)):
     if not i % 100:
-      logger.info('Write data: {} %% '.format((float(i) / len(datas)) * 100))
+      logger.info('Write data: {:.5} %% '.format((float(i) / len(datas)) * 100))
     img = _read_image(datas[i])
     if img is None:
       continue

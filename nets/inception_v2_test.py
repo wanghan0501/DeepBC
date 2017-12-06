@@ -27,7 +27,6 @@ slim = tf.contrib.slim
 
 
 class InceptionV2Test(tf.test.TestCase):
-
   def testBuildClassificationNetwork(self):
     batch_size = 5
     height, width = 224, 224
@@ -69,10 +68,10 @@ class InceptionV2Test(tf.test.TestCase):
       with tf.Graph().as_default():
         inputs = tf.random_uniform((batch_size, height, width, 3))
         out_tensor, end_points = inception.inception_v2_base(
-            inputs, final_endpoint=endpoint)
+          inputs, final_endpoint=endpoint)
         self.assertTrue(out_tensor.op.name.startswith(
-            'InceptionV2/' + endpoint))
-        self.assertItemsEqual(endpoints[:index+1], end_points)
+          'InceptionV2/' + endpoint))
+        self.assertItemsEqual(endpoints[:index + 1], end_points)
 
   def testBuildAndCheckAllEndPointsUptoMixed5c(self):
     batch_size = 5
@@ -110,7 +109,7 @@ class InceptionV2Test(tf.test.TestCase):
     with slim.arg_scope(inception.inception_v2_arg_scope()):
       inception.inception_v2_base(inputs)
     total_params, _ = slim.model_analyzer.analyze_vars(
-        slim.get_model_variables())
+      slim.get_model_variables())
     self.assertAlmostEqual(10173112, total_params)
 
   def testBuildEndPointsWithDepthMultiplierLessThanOne(self):
@@ -125,8 +124,8 @@ class InceptionV2Test(tf.test.TestCase):
                      if key.startswith('Mixed') or key.startswith('Conv')]
 
     _, end_points_with_multiplier = inception.inception_v2(
-        inputs, num_classes, scope='depth_multiplied_net',
-        depth_multiplier=0.5)
+      inputs, num_classes, scope='depth_multiplied_net',
+      depth_multiplier=0.5)
 
     for key in endpoint_keys:
       original_depth = end_points[key].get_shape().as_list()[3]
@@ -145,8 +144,8 @@ class InceptionV2Test(tf.test.TestCase):
                      if key.startswith('Mixed') or key.startswith('Conv')]
 
     _, end_points_with_multiplier = inception.inception_v2(
-        inputs, num_classes, scope='depth_multiplied_net',
-        depth_multiplier=2.0)
+      inputs, num_classes, scope='depth_multiplied_net',
+      depth_multiplier=2.0)
 
     for key in endpoint_keys:
       original_depth = end_points[key].get_shape().as_list()[3]
@@ -172,12 +171,12 @@ class InceptionV2Test(tf.test.TestCase):
     _, end_points = inception.inception_v2_base(inputs)
 
     endpoint_keys = [
-        key for key in end_points.keys()
-        if key.startswith('Mixed') or key.startswith('Conv')
+      key for key in end_points.keys()
+      if key.startswith('Mixed') or key.startswith('Conv')
     ]
 
     _, end_points_with_replacement = inception.inception_v2_base(
-        inputs, use_separable_conv=False)
+      inputs, use_separable_conv=False)
 
     # The endpoint shapes must be equal to the original shape even when the
     # separable convolution is replaced with a normal convolution.
@@ -195,19 +194,19 @@ class InceptionV2Test(tf.test.TestCase):
     _, end_points = inception.inception_v2_base(inputs)
 
     endpoint_keys = [
-        key for key in end_points.keys()
-        if key.startswith('Mixed') or key.startswith('Conv')
+      key for key in end_points.keys()
+      if key.startswith('Mixed') or key.startswith('Conv')
     ]
 
     inputs_in_nchw = tf.random_uniform((batch_size, 3, height, width))
     _, end_points_with_replacement = inception.inception_v2_base(
-        inputs_in_nchw, use_separable_conv=False, data_format='NCHW')
+      inputs_in_nchw, use_separable_conv=False, data_format='NCHW')
 
     # With the 'NCHW' data format, all endpoint activations have a transposed
     # shape from the original shape with the 'NHWC' layout.
     for key in endpoint_keys:
       transposed_original_shape = tf.transpose(
-          end_points[key], [0, 3, 1, 2]).get_shape().as_list()
+        end_points[key], [0, 3, 1, 2]).get_shape().as_list()
       self.assertTrue(key in end_points_with_replacement)
       new_shape = end_points_with_replacement[key].get_shape().as_list()
       self.assertListEqual(transposed_original_shape, new_shape)

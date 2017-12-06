@@ -46,12 +46,12 @@ def inception_arg_scope(weight_decay=0.00004,
     An `arg_scope` to use for the inception models.
   """
   batch_norm_params = {
-      # Decay for the moving averages.
-      'decay': batch_norm_decay,
-      # epsilon to prevent 0s in variance.
-      'epsilon': batch_norm_epsilon,
-      # collection containing update_ops.
-      'updates_collections': tf.GraphKeys.UPDATE_OPS,
+    # Decay for the moving averages.
+    'decay': batch_norm_decay,
+    # epsilon to prevent 0s in variance.
+    'epsilon': batch_norm_epsilon,
+    # collection containing update_ops.
+    'updates_collections': tf.GraphKeys.UPDATE_OPS,
   }
   if use_batch_norm:
     normalizer_fn = slim.batch_norm

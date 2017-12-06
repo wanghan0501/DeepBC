@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-  
 
-from __future__ import print_function
 from __future__ import absolute_import
+from __future__ import print_function
 
 """
 Created by Wang Han on 2017/11/5 11:19.
@@ -13,6 +13,9 @@ import logging
 
 class ModelConfig():
   def __init__(self,
+               train_data_path,
+               test_data_path,
+               model_log_path=None,
                batch_size=100,
                num_classes=2,
                max_epoch=10,
@@ -22,9 +25,12 @@ class ModelConfig():
                train_data_length=0,
                validation_data_length=0,
                test_data_length=0,
-               num_threads=30,
+               num_threads=8,
                model_name='inception_resnet_v2',
                use_tensorboard=False):
+    self.train_data_path = train_data_path
+    self.test_data_path = test_data_path
+    self.model_log_path = model_log_path
     self.batch_size = batch_size
     self.num_classes = num_classes
     self.max_epoch = max_epoch
@@ -41,6 +47,9 @@ class ModelConfig():
   def __str__(self):
     str = '\n**********\n' \
           'Model Configuration Parameters as Following:\n' \
+          'model_log_path:\t {}\n' \
+          'train_data_path:\t {}\n' \
+          'test_data_path:\t {}\n' \
           'batch_size:\t{} \n' \
           'num_classes:\t{}\n' \
           'max_epoch:\t{}\n' \
@@ -54,6 +63,9 @@ class ModelConfig():
           'model_name:\t{}\n' \
           'use_tensorboard:\t{}\n' \
           '**********\n'.format(
+      self.model_log_path,
+      self.train_data_path,
+      self.test_data_path,
       self.batch_size,
       self.num_classes,
       self.max_epoch,
@@ -71,7 +83,7 @@ class ModelConfig():
 
 
 class Logger():
-  def __init__(self, filename, level=logging.DEBUG,
+  def __init__(self, filename, level=logging.INFO,
                format='%(asctime)s %(filename)s[line:%(lineno)d] %(levelname)s %(message)s',
                datefmt='%a, %d %b %Y %H:%M:%S', filemode='w'):
     self.level = level
@@ -92,7 +104,7 @@ class Logger():
     console.setLevel(level)
     curr_formatter = logging.Formatter(formatter)
     console.setFormatter(curr_formatter)
-    logging.getLogger('').addHandler(console)
+    logging.getLogger(self.filename).addHandler(console)
 
   def get_logger(self):
-    return logging
+    return logging.getLogger(self.filename)

@@ -9,11 +9,11 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import print_function
 
+import datetime
 import os
 
-import datetime
-import tensorflow as tf
 import numpy as np
+import tensorflow as tf
 
 from model import InceptionResnetV2Model
 from tfrecord import get_shuffle_batch
@@ -42,19 +42,24 @@ def get_restored_vars(exclusions):
 
 
 # get model config
-model_config = ModelConfig(model_name='inception_resnet_v2', dropout_keep_prob=0.35)
+model_config = ModelConfig(model_name='inception_resnet_v2', dropout_keep_prob=0.35,
+                           batch_size=100,
+                           train_data_path='data/tfdata/2017-12-06 14:49:40.600094/bc_train.tfrecords',
+                           test_data_path='data/tfdata/2017-12-06 14:49:40.600094/bc_test.tfrecords')
+
 # get logging
-logger = Logger(filename='logs/{}_{}.log'.format(model_config.model_name, str(datetime.datetime.now()))).get_logger()
+model_config.model_log_path = 'logs/{}_{}.log'.format(model_config.model_name, str(datetime.datetime.now()))
+logger = Logger(filename=model_config.model_log_path).get_logger()
 # get train batch data
-train_batch_images, train_batch_labels = get_shuffle_batch('data/tfdata/bc_train.tfrecords', model_config,
+train_batch_images, train_batch_labels = get_shuffle_batch(model_config.train_data_path, model_config,
                                                            name='train_shuffle_batch')
 # get test batch data
-test_batch_images, test_batch_labels = get_shuffle_batch('data/tfdata/bc_test.tfrecords', model_config,
+test_batch_images, test_batch_labels = get_shuffle_batch(model_config.test_data_path, model_config,
                                                          name='test_shuffle_batch')
 
 # set train
-model_config.train_data_length = 3261
-model_config.test_data_length = 271
+model_config.train_data_length = 3584
+model_config.test_data_length = 448
 
 model = None
 unrestored_var_list = None
@@ -65,7 +70,6 @@ if model_config.model_name == 'inception_resnet_v2':
   unrestored_var_list = ['InceptionResnetV2/AuxLogits/', 'InceptionResnetV2/Logits/', 'Adam', '_power']
   model_path = 'pretrained_models/inception_resnet_v2.ckpt'
   model_save_prefix = 'saved_models/inception_resnet_v2_' + str(datetime.datetime.now()) + '/'
-
   model_config_info = str(model_config) + \
                       'unrestored_var_list:\t{}\n' \
                       'model_path:\t{}\n' \

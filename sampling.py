@@ -1,6 +1,4 @@
-# -*- coding: utf-8 -*-  
-
-from __future__ import print_function
+# -*- coding: utf-8 -*-
 
 """
 Created by Wang Han on 2017/11/3 10:43.
@@ -8,14 +6,21 @@ E-mail address is hanwang.0501@gmail.com.
 Copyright © 2017 Wang Han. SCU. All Rights Reserved.
 """
 
-import pandas as pd
+from __future__ import print_function
+
+import datetime
 import os
 
+import pandas as pd
+
 from tfrecord import write_to_tfrecord
+from utils import Logger
 
 SAMPLING_RATE = 0.8
-IMAGE_DIR = "data/images/"
-LABEL_DIR = "data/labels.txt"
+IMAGE_DIR = "data/bc_datasets/breast/"
+LABEL_DIR = "data/bc_datasets/labels.txt"
+TF_DIR_PREFIX = 'data/tfdata/'
+IMAGE_SHAPE = (299, 299, 3)
 
 
 def load_data():
@@ -56,18 +61,38 @@ def sampling():
   train_label = train_negative_label.append(train_positive_label, ignore_index=True)
   test_label = test_negative_label.append(test_positive_label, ignore_index=True)
 
-  print("original set:", label_data.shape)
-  print("training set:", train_label.shape)
-  print("testing set:", test_label.shape)
+  TF_DIR = TF_DIR_PREFIX + str(datetime.datetime.now()) + '/'
+
+  # create data dir
+  if not os.path.exists(TF_DIR):
+    os.mkdir(TF_DIR)
+
+  logger = Logger(filename=TF_DIR + 'tf_sampling.log').get_logger()
+  logger.info('SAMPLING LOG')
+  logger.info('sampling rate: 0.8')
+  logger.info('image dir: ' + IMAGE_DIR)
+  logger.info('lable idr: ' + LABEL_DIR)
+  logger.info('image shape: {}'.format(IMAGE_SHAPE))
+  logger.info("original total set: {}".format(label_data.shape))
+  logger.info("original training set: {}".format(train_label.shape))
+  logger.info("original testing set: {}".format(test_label.shape))
+  logger.info("******************")
+  logger.info('train set data_expand: True')
+  logger.info('train set expand_rate: 1')
+  logger.info('******************')
+  logger.info('test set data_expand: False')
+  logger.info('test set expand_rate: None')
+  logger.info('******************')
 
   # write train tfrecords
-  write_to_tfrecord("data/tfdata/bc_train.tfrecords",
+  write_to_tfrecord(TF_DIR + "bc_train.tfrecords",
                     datas=train_label['pic_name'].apply(lambda x: IMAGE_DIR + x).tolist(),
-                    labels=train_label['label'].tolist(), img_shape=(299, 299, 3), data_expand=True)
+                    labels=train_label['label'].tolist(), img_shape=IMAGE_SHAPE, data_expand=True, expand_rate=1,
+                    logger=logger)
   # write test tfrecords
-  write_to_tfrecord("data/tfdata/bc_test.tfrecords",
+  write_to_tfrecord(TF_DIR + "bc_test.tfrecords",
                     datas=test_label['pic_name'].apply(lambda x: IMAGE_DIR + x).tolist(),
-                    labels=test_label['label'].tolist(), img_shape=(299, 299, 3))
+                    labels=test_label['label'].tolist(), img_shape=IMAGE_SHAPE, logger=logger)
 
 
 if __name__ == '__main__':
