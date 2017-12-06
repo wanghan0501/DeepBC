@@ -19,10 +19,10 @@ from model import InceptionResnetV2Model
 from tfrecord import get_shuffle_batch
 from utils import Logger, ModelConfig
 
-os.environ["CUDA_VISIBLE_DEVICES"] = '1'
-config_gpu = tf.ConfigProto()
-config_gpu.gpu_options.per_process_gpu_memory_fraction = 0.2
-config_gpu.gpu_options.allow_growth = True
+# os.environ["CUDA_VISIBLE_DEVICES"] = '1'
+# config_gpu = tf.ConfigProto()
+# config_gpu.gpu_options.per_process_gpu_memory_fraction = 0.5
+# config_gpu.gpu_options.allow_growth = True
 
 LOGDIR = 'summary/'
 
@@ -43,7 +43,7 @@ def get_restored_vars(exclusions):
 
 # get model config
 model_config = ModelConfig(model_name='inception_resnet_v2', dropout_keep_prob=0.35,
-                           batch_size=100,
+                           batch_size=32,
                            train_data_path='data/tfdata/2017-12-06 14:49:40.600094/bc_train.tfrecords',
                            test_data_path='data/tfdata/2017-12-06 14:49:40.600094/bc_test.tfrecords')
 
@@ -70,6 +70,8 @@ if model_config.model_name == 'inception_resnet_v2':
   unrestored_var_list = ['InceptionResnetV2/AuxLogits/', 'InceptionResnetV2/Logits/', 'Adam', '_power']
   model_path = 'pretrained_models/inception_resnet_v2.ckpt'
   model_save_prefix = 'saved_models/inception_resnet_v2_' + str(datetime.datetime.now()) + '/'
+  if not os.path.exists(model_save_prefix):
+    os.mkdir(model_save_prefix)
   model_config_info = str(model_config) + \
                       'unrestored_var_list:\t{}\n' \
                       'model_path:\t{}\n' \

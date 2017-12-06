@@ -351,7 +351,7 @@ def inception_resnet_v2_arg_scope(weight_decay=0.00004,
       'epsilon': batch_norm_epsilon,
     }
     # Set activation_fn and parameters for batch_norm.
-    with slim.arg_scope([slim.conv2d], activation_fn=tf.nn.relu,
+    with slim.arg_scope([slim.conv2d], activation_fn=tf.nn.elu,
                         normalizer_fn=slim.batch_norm,
                         normalizer_params=batch_norm_params) as scope:
       return scope
