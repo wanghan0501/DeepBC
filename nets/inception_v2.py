@@ -450,9 +450,9 @@ def inception_v2_base(inputs,
 
 
 def inception_v2(inputs,
+                 is_training,
+                 dropout_keep_prob,
                  num_classes=1000,
-                 is_training=True,
-                 dropout_keep_prob=0.8,
                  min_depth=16,
                  depth_multiplier=1.0,
                  prediction_fn=slim.softmax,

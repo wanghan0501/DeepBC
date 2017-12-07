@@ -16,11 +16,11 @@ import pandas as pd
 from tfrecord import write_to_tfrecord
 from utils import Logger
 
-SAMPLING_RATE = 0.8
+SAMPLING_RATE = 0.7
 IMAGE_DIR = "data/bc_datasets/breast/"
 LABEL_DIR = "data/bc_datasets/labels.txt"
 TF_DIR_PREFIX = 'data/tfdata/'
-IMAGE_SHAPE = (299, 299, 3)
+IMAGE_SHAPE = (224, 224, 3)
 
 
 def load_data():
@@ -77,8 +77,8 @@ def sampling():
   logger.info("original training set: {}".format(train_label.shape))
   logger.info("original testing set: {}".format(test_label.shape))
   logger.info("******************")
-  logger.info('train set data_expand: True')
-  logger.info('train set expand_rate: 1')
+  logger.info('train set data_expand: False')
+  logger.info('train set expand_rate: None')
   logger.info('******************')
   logger.info('test set data_expand: False')
   logger.info('test set expand_rate: None')
@@ -87,7 +87,7 @@ def sampling():
   # write train tfrecords
   write_to_tfrecord(TF_DIR + "bc_train.tfrecords",
                     datas=train_label['pic_name'].apply(lambda x: IMAGE_DIR + x).tolist(),
-                    labels=train_label['label'].tolist(), img_shape=IMAGE_SHAPE, data_expand=True, expand_rate=1,
+                    labels=train_label['label'].tolist(), img_shape=IMAGE_SHAPE, data_expand=False, expand_rate=2,
                     logger=logger)
   # write test tfrecords
   write_to_tfrecord(TF_DIR + "bc_test.tfrecords",
