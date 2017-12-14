@@ -90,7 +90,7 @@ if model_config.model_name == 'inception_resnet_v2':
   logger.info(model_config_info)
 elif model_config.model_name == 'inception_v2':
   model = InceptionV2Model(model_config)
-  unrestored_var_list = ['InceptionV2/Logits/', 'Adam', '_power']
+  unrestored_var_list = ['InceptionV2/Logits/', 'Adadelta', '_power']
   model_path = 'pretrained_models/inception_v2.ckpt'
   model_save_prefix = 'saved_models/inception_v2_' + str(datetime.datetime.now()) + '/'
   if not os.path.exists(model_save_prefix):
@@ -169,6 +169,7 @@ with tf.Session() as sess:
                                                                                       np.average(train_acc_array)))
     # test
     test_acc_array = []
+    cur_test_loss = None
     for batch_idx in range(int(model_config.test_data_length / model_config.batch_size)):
       curr_test_image, curr_test_label = sess.run([test_batch_images, test_batch_labels])
       test_feed_dict = {model.input_data: curr_test_image,
@@ -179,7 +180,7 @@ with tf.Session() as sess:
       if model_config.model_name == 'inception_resnet_v2':
         cur_test_acc = sess.run(model.accuracy, feed_dict=test_feed_dict)
       elif model_config.model_name == 'inception_v2':
-        cur_test_acc = sess.run(model.accuracy, feed_dict=test_feed_dict)
+        cur_test_loss, cur_test_acc = sess.run([model.loss, model.accuracy], feed_dict=test_feed_dict)
       test_acc_array.append(cur_test_acc)
 
     # for the whole test dataset
@@ -190,10 +191,12 @@ with tf.Session() as sess:
       model_save_path = model_save_prefix + 'epoch_{}_acc_{:.4f}.ckpt'.format(epoch_idx, avg_test_acc)
       save_path = saver.save(sess, model_save_path)
       logger.info('Epoch {} model has been saved with test accuracy is {:.4f}'.format(epoch_idx, avg_test_acc))
-    logger.info('Epoch {} test accuracy is {:.4f}. the max test accuracy is {:.4f} at epoch {}'.format(epoch_idx,
-                                                                                                       avg_test_acc,
-                                                                                                       max_test_acc,
-                                                                                                       max_test_acc_epoch))
+    logger.info('Epoch {} test loass is {:.4f}, test accuracy is {:.4f}. the max test accuracy is {:.4f} at epoch {}'
+                .format(epoch_idx,
+                        cur_test_loss,
+                        avg_test_acc,
+                        max_test_acc,
+                        max_test_acc_epoch))
 
 saver.save(sess, model_save_prefix + 'epoch_end.ckpt')
 logger.info('Final model has been saved')

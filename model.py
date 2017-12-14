@@ -106,7 +106,7 @@ class InceptionV2Model(object):
         tf.summary.histogram("loss", loss)
     with tf.name_scope('train'):
       # set optimizer
-      optimizer = tf.train.AdamOptimizer()
+      optimizer = tf.train.AdadeltaOptimizer(learning_rate=1)
       # set train_op
       train_op = slim.learning.create_train_op(loss, optimizer)
     with tf.name_scope('accuracy'):
