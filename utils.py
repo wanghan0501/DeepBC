@@ -25,7 +25,7 @@ class ModelConfig():
                train_data_length=0,
                validation_data_length=0,
                test_data_length=0,
-               num_threads=8,
+               num_threads=1,
                model_name='inception_resnet_v2',
                use_tensorboard=False):
     self.train_data_path = train_data_path

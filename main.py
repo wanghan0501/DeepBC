@@ -45,7 +45,7 @@ def get_restored_vars(exclusions):
 model_config = ModelConfig(model_name='inception_v2',
                            dropout_keep_prob=0.50,
                            img_shape=(224, 224, 3),
-                           batch_size=32,
+                           batch_size=64,
                            max_epoch=50,
                            train_data_path='data/tfdata/2017-12-07 16:27:17.624667/bc_train.tfrecords',
                            test_data_path='data/tfdata/2017-12-07 16:27:17.624667/bc_test.tfrecords')
@@ -132,16 +132,15 @@ with tf.Session() as sess:
     # train
     train_acc_array = []
     loss_array = []
+
     for batch_idx in range(int(model_config.train_data_length / model_config.batch_size)):
       curr_train_image, curr_train_label = sess.run([train_batch_images, train_batch_labels])
-      train_feed_dict = {model.input_data: curr_train_image,
-                         model.dropout_keep_prob: model_config.dropout_keep_prob,
-                         model.label: curr_train_label,
-                         model.is_training: True}
-      curr_train_acc = None
-      curr_loss = None
-      curr_summary = None
+
       if model_config.model_name == 'inception_resnet_v2':
+        train_feed_dict = {model.input_data: curr_train_image,
+                           model.dropout_keep_prob: model_config.dropout_keep_prob,
+                           model.label: curr_train_label,
+                           model.is_training: True}
         if model_config.use_tensorboard:
           _, curr_train_acc, curr_loss, curr_summary = sess.run(
             [model.train_op, model.accuracy, model.loss, model.summary],
@@ -151,16 +150,15 @@ with tf.Session() as sess:
             [model.train_op, model.accuracy, model.loss],
             feed_dict=train_feed_dict)
       elif model_config.model_name == 'inception_v2':
-        if model_config.use_tensorboard:
-          _, curr_train_acc, curr_loss, curr_summary = sess.run(
-            [model.train_op, model.accuracy, model.loss, model.summary],
-            feed_dict=train_feed_dict)
-        else:
-          _, curr_train_acc, curr_loss = sess.run(
-            [model.train_op, model.accuracy, model.loss],
-            feed_dict=train_feed_dict)
+        _, curr_train_acc, curr_loss, curr_train_pre, curr_train_logit = sess.run(
+          [model.train_op, model.train_accuracy, model.train_loss, model.train_predictions, model.train_logits],
+          feed_dict={model.input_data: curr_train_image,
+                     model.label: curr_train_label,
+                     })
+
       train_acc_array.append(curr_train_acc)
       loss_array.append(curr_loss)
+
       if batch_idx % model_config.plot_batch == 0:
         if model_config.use_tensorboard:
           writer.add_summary(curr_summary, epoch_idx * model_config.max_epoch + batch_idx)
@@ -169,18 +167,22 @@ with tf.Session() as sess:
                                                                                       np.average(train_acc_array)))
     # test
     test_acc_array = []
-    cur_test_loss = None
     for batch_idx in range(int(model_config.test_data_length / model_config.batch_size)):
       curr_test_image, curr_test_label = sess.run([test_batch_images, test_batch_labels])
-      test_feed_dict = {model.input_data: curr_test_image,
-                        model.dropout_keep_prob: model_config.dropout_keep_prob,
-                        model.label: curr_test_label,
-                        model.is_training: False}
+
       cur_test_acc = None
+      cur_test_loss = None
       if model_config.model_name == 'inception_resnet_v2':
+        test_feed_dict = {model.input_data: curr_test_image,
+                          model.dropout_keep_prob: model_config.dropout_keep_prob,
+                          model.label: curr_test_label,
+                          model.is_training: False}
         cur_test_acc = sess.run(model.accuracy, feed_dict=test_feed_dict)
       elif model_config.model_name == 'inception_v2':
-        cur_test_loss, cur_test_acc = sess.run([model.loss, model.accuracy], feed_dict=test_feed_dict)
+        cur_test_loss, cur_test_acc = sess.run([model.test_loss, model.test_accuracy],
+                                               feed_dict={model.input_data: curr_test_image,
+                                                          model.label: curr_test_label,
+                                                          })
       test_acc_array.append(cur_test_acc)
 
     # for the whole test dataset
@@ -198,7 +200,7 @@ with tf.Session() as sess:
                         max_test_acc,
                         max_test_acc_epoch))
 
-saver.save(sess, model_save_prefix + 'epoch_end.ckpt')
-logger.info('Final model has been saved')
-coord.request_stop()
-coord.join(threads)
+  saver.save(sess, model_save_prefix + 'epoch_end.ckpt')
+  logger.info('Final model has been saved')
+  coord.request_stop()
+  coord.join(threads)
