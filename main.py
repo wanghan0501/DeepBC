@@ -45,7 +45,7 @@ def get_restored_vars(exclusions):
 model_config = ModelConfig(model_name='inception_v2',
                            dropout_keep_prob=0.50,
                            img_shape=(224, 224, 3),
-                           batch_size=64,
+                           batch_size=16,
                            max_epoch=50,
                            train_data_path='data/tfdata/2017-12-07 16:27:17.624667/bc_train.tfrecords',
                            test_data_path='data/tfdata/2017-12-07 16:27:17.624667/bc_test.tfrecords')
