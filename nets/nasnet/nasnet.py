@@ -38,20 +38,20 @@ slim = tf.contrib.slim
 def _cifar_config(is_training=True):
   drop_path_keep_prob = 1.0 if not is_training else 0.6
   return tf.contrib.training.HParams(
-      stem_multiplier=3.0,
-      drop_path_keep_prob=drop_path_keep_prob,
-      num_cells=18,
-      use_aux_head=1,
-      num_conv_filters=32,
-      dense_dropout_keep_prob=1.0,
-      filter_scaling_rate=2.0,
-      num_reduction_layers=2,
-      data_format='NHWC',
-      skip_reduction_layer_input=0,
-      # 600 epochs with a batch size of 32
-      # This is used for the drop path probabilities since it needs to increase
-      # the drop out probability over the course of training.
-      total_training_steps=937500,
+    stem_multiplier=3.0,
+    drop_path_keep_prob=drop_path_keep_prob,
+    num_cells=18,
+    use_aux_head=1,
+    num_conv_filters=32,
+    dense_dropout_keep_prob=1.0,
+    filter_scaling_rate=2.0,
+    num_reduction_layers=2,
+    data_format='NHWC',
+    skip_reduction_layer_input=0,
+    # 600 epochs with a batch size of 32
+    # This is used for the drop path probabilities since it needs to increase
+    # the drop out probability over the course of training.
+    total_training_steps=937500,
   )
 
 
@@ -66,19 +66,19 @@ def _cifar_config(is_training=True):
 # label smoothing: 0.1
 # clip global norm of all gradients by 10
 def _large_imagenet_config(is_training=True):
-  drop_path_keep_prob = 1.0 if not is_training else 0.7
+  drop_path_keep_prob = 1.0 if not is_training else 0.5
   return tf.contrib.training.HParams(
-      stem_multiplier=3.0,
-      dense_dropout_keep_prob=0.5,
-      num_cells=18,
-      filter_scaling_rate=2.0,
-      num_conv_filters=168,
-      drop_path_keep_prob=drop_path_keep_prob,
-      use_aux_head=1,
-      num_reduction_layers=2,
-      data_format='NHWC',
-      skip_reduction_layer_input=1,
-      total_training_steps=250000,
+    stem_multiplier=3.0,
+    dense_dropout_keep_prob=0.5,
+    num_cells=18,
+    filter_scaling_rate=2.0,
+    num_conv_filters=168,
+    drop_path_keep_prob=drop_path_keep_prob,
+    use_aux_head=1,
+    num_reduction_layers=2,
+    data_format='NHWC',
+    skip_reduction_layer_input=1,
+    total_training_steps=250000,
   )
 
 
@@ -94,17 +94,17 @@ def _large_imagenet_config(is_training=True):
 # clip global norm of all gradients by 10
 def _mobile_imagenet_config():
   return tf.contrib.training.HParams(
-      stem_multiplier=1.0,
-      dense_dropout_keep_prob=0.5,
-      num_cells=12,
-      filter_scaling_rate=2.0,
-      drop_path_keep_prob=1.0,
-      num_conv_filters=44,
-      use_aux_head=1,
-      num_reduction_layers=2,
-      data_format='NHWC',
-      skip_reduction_layer_input=0,
-      total_training_steps=250000,
+    stem_multiplier=1.0,
+    dense_dropout_keep_prob=0.5,
+    num_cells=12,
+    filter_scaling_rate=2.0,
+    drop_path_keep_prob=1.0,
+    num_conv_filters=44,
+    use_aux_head=1,
+    num_reduction_layers=2,
+    data_format='NHWC',
+    skip_reduction_layer_input=0,
+    total_training_steps=250000,
   )
 
 
@@ -123,16 +123,16 @@ def nasnet_cifar_arg_scope(weight_decay=5e-4,
     An `arg_scope` to use for the NASNet Cifar Model.
   """
   batch_norm_params = {
-      # Decay for the moving averages.
-      'decay': batch_norm_decay,
-      # epsilon to prevent 0s in variance.
-      'epsilon': batch_norm_epsilon,
-      'scale': True,
-      'fused': True,
+    # Decay for the moving averages.
+    'decay': batch_norm_decay,
+    # epsilon to prevent 0s in variance.
+    'epsilon': batch_norm_epsilon,
+    'scale': True,
+    'fused': True,
   }
   weights_regularizer = tf.contrib.layers.l2_regularizer(weight_decay)
   weights_initializer = tf.contrib.layers.variance_scaling_initializer(
-      mode='FAN_OUT')
+    mode='FAN_OUT')
   with arg_scope([slim.fully_connected, slim.conv2d, slim.separable_conv2d],
                  weights_regularizer=weights_regularizer,
                  weights_initializer=weights_initializer):
@@ -159,16 +159,16 @@ def nasnet_mobile_arg_scope(weight_decay=4e-5,
     An `arg_scope` to use for the NASNet Mobile Model.
   """
   batch_norm_params = {
-      # Decay for the moving averages.
-      'decay': batch_norm_decay,
-      # epsilon to prevent 0s in variance.
-      'epsilon': batch_norm_epsilon,
-      'scale': True,
-      'fused': True,
+    # Decay for the moving averages.
+    'decay': batch_norm_decay,
+    # epsilon to prevent 0s in variance.
+    'epsilon': batch_norm_epsilon,
+    'scale': True,
+    'fused': True,
   }
   weights_regularizer = tf.contrib.layers.l2_regularizer(weight_decay)
   weights_initializer = tf.contrib.layers.variance_scaling_initializer(
-      mode='FAN_OUT')
+    mode='FAN_OUT')
   with arg_scope([slim.fully_connected, slim.conv2d, slim.separable_conv2d],
                  weights_regularizer=weights_regularizer,
                  weights_initializer=weights_initializer):
@@ -195,16 +195,16 @@ def nasnet_large_arg_scope(weight_decay=5e-5,
     An `arg_scope` to use for the NASNet Large Model.
   """
   batch_norm_params = {
-      # Decay for the moving averages.
-      'decay': batch_norm_decay,
-      # epsilon to prevent 0s in variance.
-      'epsilon': batch_norm_epsilon,
-      'scale': True,
-      'fused': True,
+    # Decay for the moving averages.
+    'decay': batch_norm_decay,
+    # epsilon to prevent 0s in variance.
+    'epsilon': batch_norm_epsilon,
+    'scale': True,
+    'fused': True,
   }
   weights_regularizer = tf.contrib.layers.l2_regularizer(weight_decay)
   weights_initializer = tf.contrib.layers.variance_scaling_initializer(
-      mode='FAN_OUT')
+    mode='FAN_OUT')
   with arg_scope([slim.fully_connected, slim.conv2d, slim.separable_conv2d],
                  weights_regularizer=weights_regularizer,
                  weights_initializer=weights_initializer):
@@ -222,7 +222,7 @@ def _build_aux_head(net, end_points, num_classes, hparams, scope):
     aux_logits = tf.identity(net)
     with tf.variable_scope('aux_logits'):
       aux_logits = slim.avg_pool2d(
-          aux_logits, [5, 5], stride=3, padding='VALID')
+        aux_logits, [5, 5], stride=3, padding='VALID')
       aux_logits = slim.conv2d(aux_logits, 128, [1, 1], scope='proj')
       aux_logits = slim.batch_norm(aux_logits, scope='aux_bn0')
       aux_logits = tf.nn.relu(aux_logits)
@@ -247,21 +247,21 @@ def _imagenet_stem(inputs, hparams, stem_cell):
   # 149 x 149 x 32
   num_stem_filters = int(32 * hparams.stem_multiplier)
   net = slim.conv2d(
-      inputs, num_stem_filters, [3, 3], stride=2, scope='conv0',
-      padding='VALID')
+    inputs, num_stem_filters, [3, 3], stride=2, scope='conv0',
+    padding='VALID')
   net = slim.batch_norm(net, scope='conv0_bn')
 
   # Run the reduction cells
   cell_outputs = [None, net]
-  filter_scaling = 1.0 / (hparams.filter_scaling_rate**num_stem_cells)
+  filter_scaling = 1.0 / (hparams.filter_scaling_rate ** num_stem_cells)
   for cell_num in range(num_stem_cells):
     net = stem_cell(
-        net,
-        scope='cell_stem_{}'.format(cell_num),
-        filter_scaling=filter_scaling,
-        stride=2,
-        prev_layer=cell_outputs[-2],
-        cell_num=cell_num)
+      net,
+      scope='cell_stem_{}'.format(cell_num),
+      filter_scaling=filter_scaling,
+      stride=2,
+      prev_layer=cell_outputs[-2],
+      cell_num=cell_num)
     cell_outputs.append(net)
     filter_scaling *= hparams.filter_scaling_rate
   return net, cell_outputs
@@ -271,10 +271,10 @@ def _cifar_stem(inputs, hparams):
   """Stem used for models trained on Cifar."""
   num_stem_filters = int(hparams.num_conv_filters * hparams.stem_multiplier)
   net = slim.conv2d(
-      inputs,
-      num_stem_filters,
-      3,
-      scope='l1_stem_3x3')
+    inputs,
+    num_stem_filters,
+    3,
+    scope='l1_stem_3x3')
   net = slim.batch_norm(net, scope='l1_stem_bn')
   return net, [None, net]
 
@@ -296,11 +296,11 @@ def build_nasnet_cifar(
   total_num_cells = hparams.num_cells + 2
 
   normal_cell = nasnet_utils.NasNetANormalCell(
-      hparams.num_conv_filters, hparams.drop_path_keep_prob,
-      total_num_cells, hparams.total_training_steps)
+    hparams.num_conv_filters, hparams.drop_path_keep_prob,
+    total_num_cells, hparams.total_training_steps)
   reduction_cell = nasnet_utils.NasNetAReductionCell(
-      hparams.num_conv_filters, hparams.drop_path_keep_prob,
-      total_num_cells, hparams.total_training_steps)
+    hparams.num_conv_filters, hparams.drop_path_keep_prob,
+    total_num_cells, hparams.total_training_steps)
   with arg_scope([slim.dropout, nasnet_utils.drop_path, slim.batch_norm],
                  is_training=is_training):
     with arg_scope([slim.avg_pool2d,
@@ -320,6 +320,8 @@ def build_nasnet_cifar(
                                 hparams=hparams,
                                 is_training=is_training,
                                 stem_type='cifar')
+
+
 build_nasnet_cifar.default_image_size = 32
 
 
@@ -343,11 +345,11 @@ def build_nasnet_mobile(images, num_classes,
   total_num_cells += 2
 
   normal_cell = nasnet_utils.NasNetANormalCell(
-      hparams.num_conv_filters, hparams.drop_path_keep_prob,
-      total_num_cells, hparams.total_training_steps)
+    hparams.num_conv_filters, hparams.drop_path_keep_prob,
+    total_num_cells, hparams.total_training_steps)
   reduction_cell = nasnet_utils.NasNetAReductionCell(
-      hparams.num_conv_filters, hparams.drop_path_keep_prob,
-      total_num_cells, hparams.total_training_steps)
+    hparams.num_conv_filters, hparams.drop_path_keep_prob,
+    total_num_cells, hparams.total_training_steps)
   with arg_scope([slim.dropout, nasnet_utils.drop_path, slim.batch_norm],
                  is_training=is_training):
     with arg_scope([slim.avg_pool2d,
@@ -368,12 +370,15 @@ def build_nasnet_mobile(images, num_classes,
                                 is_training=is_training,
                                 stem_type='imagenet',
                                 final_endpoint=final_endpoint)
+
+
 build_nasnet_mobile.default_image_size = 224
 
 
 def build_nasnet_large(images, num_classes,
                        is_training=True,
-                       final_endpoint=None):
+                       final_endpoint=None,
+                       reuse=None):
   """Build NASNet Large model for the ImageNet Dataset."""
   hparams = _large_imagenet_config(is_training=is_training)
 
@@ -391,13 +396,13 @@ def build_nasnet_large(images, num_classes,
   total_num_cells += 2
 
   normal_cell = nasnet_utils.NasNetANormalCell(
-      hparams.num_conv_filters, hparams.drop_path_keep_prob,
-      total_num_cells, hparams.total_training_steps)
+    hparams.num_conv_filters, hparams.drop_path_keep_prob,
+    total_num_cells, hparams.total_training_steps)
   reduction_cell = nasnet_utils.NasNetAReductionCell(
-      hparams.num_conv_filters, hparams.drop_path_keep_prob,
-      total_num_cells, hparams.total_training_steps)
+    hparams.num_conv_filters, hparams.drop_path_keep_prob,
+    total_num_cells, hparams.total_training_steps)
   with arg_scope([slim.dropout, nasnet_utils.drop_path, slim.batch_norm],
-                 is_training=is_training):
+                 is_training=is_training, reuse=reuse):
     with arg_scope([slim.avg_pool2d,
                     slim.max_pool2d,
                     slim.conv2d,
@@ -416,6 +421,8 @@ def build_nasnet_large(images, num_classes,
                                 is_training=is_training,
                                 stem_type='imagenet',
                                 final_endpoint=final_endpoint)
+
+
 build_nasnet_large.default_image_size = 331
 
 
@@ -430,13 +437,14 @@ def _build_nasnet_base(images,
   """Constructs a NASNet image model."""
 
   end_points = {}
+
   def add_and_check_endpoint(endpoint_name, net):
     end_points[endpoint_name] = net
     return final_endpoint and (endpoint_name == final_endpoint)
 
   # Find where to place the reduction cells or stride normal cells
   reduction_indices = nasnet_utils.calc_reduction_layers(
-      hparams.num_cells, hparams.num_reduction_layers)
+    hparams.num_cells, hparams.num_reduction_layers)
   stem_cell = reduction_cell
 
   if stem_type == 'imagenet':
@@ -464,12 +472,12 @@ def _build_nasnet_base(images,
     if cell_num in reduction_indices:
       filter_scaling *= hparams.filter_scaling_rate
       net = reduction_cell(
-          net,
-          scope='reduction_cell_{}'.format(reduction_indices.index(cell_num)),
-          filter_scaling=filter_scaling,
-          stride=2,
-          prev_layer=cell_outputs[-2],
-          cell_num=true_cell_num)
+        net,
+        scope='reduction_cell_{}'.format(reduction_indices.index(cell_num)),
+        filter_scaling=filter_scaling,
+        stride=2,
+        prev_layer=cell_outputs[-2],
+        cell_num=true_cell_num)
       if add_and_check_endpoint(
           'Reduction_Cell_{}'.format(reduction_indices.index(cell_num)), net):
         return net, end_points
@@ -478,18 +486,18 @@ def _build_nasnet_base(images,
     if not hparams.skip_reduction_layer_input:
       prev_layer = cell_outputs[-2]
     net = normal_cell(
-        net,
-        scope='cell_{}'.format(cell_num),
-        filter_scaling=filter_scaling,
-        stride=stride,
-        prev_layer=prev_layer,
-        cell_num=true_cell_num)
+      net,
+      scope='cell_{}'.format(cell_num),
+      filter_scaling=filter_scaling,
+      stride=stride,
+      prev_layer=prev_layer,
+      cell_num=true_cell_num)
 
     if add_and_check_endpoint('Cell_{}'.format(cell_num), net):
       return net, end_points
     true_cell_num += 1
     if (hparams.use_aux_head and cell_num in aux_head_cell_idxes and
-        num_classes and is_training):
+          num_classes and is_training):
       aux_net = tf.nn.relu(net)
       _build_aux_head(aux_net, end_points, num_classes, hparams,
                       scope='aux_{}'.format(cell_num))

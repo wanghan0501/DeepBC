@@ -15,7 +15,7 @@ import os
 import numpy as np
 import tensorflow as tf
 
-from model import InceptionResnetV2Model, InceptionV2Model
+from model import InceptionResnetV2Model, InceptionV2Model, NASNetLargeModel
 from tfrecord import get_shuffle_batch
 from utils import Logger, ModelConfig
 
@@ -43,7 +43,7 @@ def get_restored_vars(exclusions):
 
 # get model config
 model_config = ModelConfig(model_name='inception_v2',
-                           dropout_keep_prob=0.50,
+                           dropout_keep_prob=0.30,
                            img_shape=(224, 224, 3),
                            batch_size=16,
                            max_epoch=50,
@@ -75,37 +75,30 @@ if model_config.model_name == 'inception_resnet_v2':
   # model_path = 'pretrained_models/inception_resnet_v2.ckpt'
   model_path = 'saved_models/inception_resnet_v2_2017-12-06 22:37:14.411152/epoch_3_acc_0.8633.ckpt'
   model_save_prefix = 'saved_models/inception_resnet_v2_' + str(datetime.datetime.now()) + '/'
-  if not os.path.exists(model_save_prefix):
-    os.mkdir(model_save_prefix)
-  model_config_info = str(model_config) + \
-                      "unrestored_var_list:\t{}\n" \
-                      "model_path:\t{}\n" \
-                      "model_save_prefix:\t{}\n" \
-                      "**********\n".format(
-                        unrestored_var_list,
-                        model_path,
-                        model_save_prefix
-                      )
-  # logging model config
-  logger.info(model_config_info)
 elif model_config.model_name == 'inception_v2':
   model = InceptionV2Model(model_config)
   unrestored_var_list = ['InceptionV2/Logits/', 'Adadelta', '_power']
   model_path = 'pretrained_models/inception_v2.ckpt'
   model_save_prefix = 'saved_models/inception_v2_' + str(datetime.datetime.now()) + '/'
-  if not os.path.exists(model_save_prefix):
-    os.mkdir(model_save_prefix)
-  model_config_info = str(model_config) + \
-                      "unrestored_var_list:\t{}\n" \
-                      "model_path:\t{}\n" \
-                      "model_save_prefix:\t{}\n" \
-                      "**********\n".format(
-                        unrestored_var_list,
-                        model_path,
-                        model_save_prefix
-                      )
-  # logging model config
-  logger.info(model_config_info)
+elif model_config.model_name == 'nasnet_large':
+  model = NASNetLargeModel(model_config)
+  unrestored_var_list = ['InceptionV2/Logits/', 'Adadelta']
+  model_path = 'pretrained_models/inception_v2.ckpt'
+  model_save_prefix = 'saved_models/nasnet_large_' + str(datetime.datetime.now()) + '/'
+
+if not os.path.exists(model_save_prefix):
+  os.mkdir(model_save_prefix)
+model_config_info = str(model_config) + \
+                    "unrestored_var_list:\t{}\n" \
+                    "model_path:\t{}\n" \
+                    "model_save_prefix:\t{}\n" \
+                    "**********\n".format(
+                      unrestored_var_list,
+                      model_path,
+                      model_save_prefix
+                    )
+# logging model config
+logger.info(model_config_info)
 
 with tf.Session() as sess:
   tf.global_variables_initializer().run()
@@ -173,12 +166,16 @@ with tf.Session() as sess:
       cur_test_acc = None
       cur_test_loss = None
       if model_config.model_name == 'inception_resnet_v2':
-        test_feed_dict = {model.input_data: curr_test_image,
-                          model.dropout_keep_prob: model_config.dropout_keep_prob,
-                          model.label: curr_test_label,
-                          model.is_training: False}
-        cur_test_acc = sess.run(model.accuracy, feed_dict=test_feed_dict)
+        cur_test_acc = sess.run(model.accuracy, feed_dict={model.input_data: curr_test_image,
+                                                           model.dropout_keep_prob: model_config.dropout_keep_prob,
+                                                           model.label: curr_test_label,
+                                                           model.is_training: False})
       elif model_config.model_name == 'inception_v2':
+        cur_test_loss, cur_test_acc = sess.run([model.test_loss, model.test_accuracy],
+                                               feed_dict={model.input_data: curr_test_image,
+                                                          model.label: curr_test_label,
+                                                          })
+      elif model_config.model_name == 'nasnet_large':
         cur_test_loss, cur_test_acc = sess.run([model.test_loss, model.test_accuracy],
                                                feed_dict={model.input_data: curr_test_image,
                                                           model.label: curr_test_label,
