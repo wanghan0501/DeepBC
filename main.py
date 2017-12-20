@@ -42,13 +42,13 @@ def get_restored_vars(exclusions):
 
 
 # get model config
-model_config = ModelConfig(model_name='inception_v2',
+model_config = ModelConfig(model_name='inception_resnet_v2',
                            dropout_keep_prob=0.30,
-                           img_shape=(224, 224, 3),
-                           batch_size=16,
+                           img_shape=(299, 299, 3),
+                           batch_size=8,
                            max_epoch=50,
-                           train_data_path='data/tfdata/2017-12-07 16:27:17.624667/bc_train.tfrecords',
-                           test_data_path='data/tfdata/2017-12-07 16:27:17.624667/bc_test.tfrecords')
+                           train_data_path='data/tfdata/2017-12-20 11:50:22.793129/bc_train.tfrecords',
+                           test_data_path='data/tfdata/2017-12-20 11:50:22.793129/bc_test.tfrecords')
 
 # get logging
 model_config.model_log_path = 'logs/{}_{}.log'.format(model_config.model_name, str(datetime.datetime.now()))
@@ -61,7 +61,7 @@ test_batch_images, test_batch_labels = get_shuffle_batch(model_config.test_data_
                                                          name='test_shuffle_batch')
 
 # set train
-model_config.train_data_length = 1568
+model_config.train_data_length = 4704
 model_config.test_data_length = 672
 
 model = None
@@ -70,10 +70,10 @@ model_path = None
 model_save_prefix = None
 if model_config.model_name == 'inception_resnet_v2':
   model = InceptionResnetV2Model(model_config)
-  unrestored_var_list = ['InceptionResnetV2/Logits/', ]
-  # unrestored_var_list = ['InceptionResnetV2/AuxLogits/', 'InceptionResnetV2/Logits/', 'Adam', '_power']
-  # model_path = 'pretrained_models/inception_resnet_v2.ckpt'
-  model_path = 'saved_models/inception_resnet_v2_2017-12-06 22:37:14.411152/epoch_3_acc_0.8633.ckpt'
+  # unrestored_var_list = ['InceptionResnetV2/Logits/', ]
+  unrestored_var_list = ['InceptionResnetV2/AuxLogits/', 'InceptionResnetV2/Logits/', 'Adadelta']
+  model_path = 'pretrained_models/inception_resnet_v2.ckpt'
+  # model_path = 'saved_models/inception_resnet_v2_2017-12-06 22:37:14.411152/epoch_3_acc_0.8633.ckpt'
   model_save_prefix = 'saved_models/inception_resnet_v2_' + str(datetime.datetime.now()) + '/'
 elif model_config.model_name == 'inception_v2':
   model = InceptionV2Model(model_config)
@@ -82,8 +82,8 @@ elif model_config.model_name == 'inception_v2':
   model_save_prefix = 'saved_models/inception_v2_' + str(datetime.datetime.now()) + '/'
 elif model_config.model_name == 'nasnet_large':
   model = NASNetLargeModel(model_config)
-  unrestored_var_list = ['InceptionV2/Logits/', 'Adadelta']
-  model_path = 'pretrained_models/inception_v2.ckpt'
+  unrestored_var_list = ['NASNet/Logits/', 'Adadelta']
+  model_path = 'pretrained_models/model.ckpt'
   model_save_prefix = 'saved_models/nasnet_large_' + str(datetime.datetime.now()) + '/'
 
 if not os.path.exists(model_save_prefix):
@@ -107,16 +107,17 @@ with tf.Session() as sess:
   restorer = tf.train.Saver(variables_to_restore)
   restorer.restore(sess, model_path)
 
-  saver = tf.train.Saver()
-  # writer
-  writer = tf.summary.FileWriter(LOGDIR)
-  writer.add_graph(sess.graph)
+  if model_config.use_tensorboard:
+    # writer
+    writer = tf.summary.FileWriter(LOGDIR)
+    writer.add_graph(sess.graph)
 
   trainabled = 0
   for var in tf.trainable_variables():
     trainabled += 1
   logger.info('the number of trainabled variables is {}'.format(trainabled))
 
+  saver = tf.train.Saver()
   coord = tf.train.Coordinator()
   threads = tf.train.start_queue_runners(sess, coord=coord)
 
@@ -128,33 +129,15 @@ with tf.Session() as sess:
 
     for batch_idx in range(int(model_config.train_data_length / model_config.batch_size)):
       curr_train_image, curr_train_label = sess.run([train_batch_images, train_batch_labels])
-
-      if model_config.model_name == 'inception_resnet_v2':
-        train_feed_dict = {model.input_data: curr_train_image,
-                           model.dropout_keep_prob: model_config.dropout_keep_prob,
-                           model.label: curr_train_label,
-                           model.is_training: True}
-        if model_config.use_tensorboard:
-          _, curr_train_acc, curr_loss, curr_summary = sess.run(
-            [model.train_op, model.accuracy, model.loss, model.summary],
-            feed_dict=train_feed_dict)
-        else:
-          _, curr_train_acc, curr_loss = sess.run(
-            [model.train_op, model.accuracy, model.loss],
-            feed_dict=train_feed_dict)
-      elif model_config.model_name == 'inception_v2':
-        _, curr_train_acc, curr_loss, curr_train_pre, curr_train_logit = sess.run(
-          [model.train_op, model.train_accuracy, model.train_loss, model.train_predictions, model.train_logits],
-          feed_dict={model.input_data: curr_train_image,
-                     model.label: curr_train_label,
-                     })
-
+      _, curr_train_acc, curr_loss = sess.run([model.train_op, model.train_accuracy, model.train_loss],
+                                              feed_dict={model.input_data: curr_train_image,
+                                                         model.label: curr_train_label})
       train_acc_array.append(curr_train_acc)
       loss_array.append(curr_loss)
 
       if batch_idx % model_config.plot_batch == 0:
-        if model_config.use_tensorboard:
-          writer.add_summary(curr_summary, epoch_idx * model_config.max_epoch + batch_idx)
+        # if model_config.use_tensorboard:
+        #   writer.add_summary(curr_summary, epoch_idx * model_config.max_epoch + batch_idx)
         logger.info('Epoch {} train loss is: {:.4f}, train accuracy is {:.4f}'.format(epoch_idx,
                                                                                       np.average(loss_array),
                                                                                       np.average(train_acc_array)))
@@ -162,24 +145,9 @@ with tf.Session() as sess:
     test_acc_array = []
     for batch_idx in range(int(model_config.test_data_length / model_config.batch_size)):
       curr_test_image, curr_test_label = sess.run([test_batch_images, test_batch_labels])
-
-      cur_test_acc = None
-      cur_test_loss = None
-      if model_config.model_name == 'inception_resnet_v2':
-        cur_test_acc = sess.run(model.accuracy, feed_dict={model.input_data: curr_test_image,
-                                                           model.dropout_keep_prob: model_config.dropout_keep_prob,
-                                                           model.label: curr_test_label,
-                                                           model.is_training: False})
-      elif model_config.model_name == 'inception_v2':
-        cur_test_loss, cur_test_acc = sess.run([model.test_loss, model.test_accuracy],
-                                               feed_dict={model.input_data: curr_test_image,
-                                                          model.label: curr_test_label,
-                                                          })
-      elif model_config.model_name == 'nasnet_large':
-        cur_test_loss, cur_test_acc = sess.run([model.test_loss, model.test_accuracy],
-                                               feed_dict={model.input_data: curr_test_image,
-                                                          model.label: curr_test_label,
-                                                          })
+      cur_test_loss, cur_test_acc = sess.run([model.test_loss, model.test_accuracy],
+                                             feed_dict={model.input_data: curr_test_image,
+                                                        model.label: curr_test_label})
       test_acc_array.append(cur_test_acc)
 
     # for the whole test dataset
