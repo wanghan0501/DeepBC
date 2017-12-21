@@ -33,7 +33,6 @@ from __future__ import print_function
 
 import tensorflow as tf
 
-
 arg_scope = tf.contrib.framework.arg_scope
 slim = tf.contrib.slim
 
@@ -87,7 +86,7 @@ def global_avg_pool(x, data_format=INVALID):
 def factorized_reduction(net, output_filters, stride, data_format=INVALID):
   """Reduces the shape of net without information loss due to striding."""
   assert output_filters % 2 == 0, (
-      'Need even number of filters when using this factorized reduction.')
+    'Need even number of filters when using this factorized reduction.')
   assert data_format != INVALID
   if stride == 1:
     net = slim.conv2d(net, output_filters, 1, scope='path_conv')
@@ -100,7 +99,7 @@ def factorized_reduction(net, output_filters, stride, data_format=INVALID):
 
   # Skip path 1
   path1 = tf.nn.avg_pool(
-      net, [1, 1, 1, 1], stride_spec, 'VALID', data_format=data_format)
+    net, [1, 1, 1, 1], stride_spec, 'VALID', data_format=data_format)
   path1 = slim.conv2d(path1, int(output_filters / 2), 1, scope='path1_conv')
 
   # Skip path 2
@@ -116,7 +115,7 @@ def factorized_reduction(net, output_filters, stride, data_format=INVALID):
     concat_axis = 1
 
   path2 = tf.nn.avg_pool(
-      path2, [1, 1, 1, 1], stride_spec, 'VALID', data_format=data_format)
+    path2, [1, 1, 1, 1], stride_spec, 'VALID', data_format=data_format)
   path2 = slim.conv2d(path2, int(output_filters / 2), 1, scope='path2_conv')
 
   # Concat and apply BN
@@ -142,7 +141,7 @@ def _operation_to_filter_shape(operation):
   splitted_operation = operation.split('x')
   filter_shape = int(splitted_operation[0][-1])
   assert filter_shape == int(
-      splitted_operation[1][0]), 'Rectangular filters not supported.'
+    splitted_operation[1][0]), 'Rectangular filters not supported.'
   return filter_shape
 
 
@@ -175,25 +174,25 @@ def _stacked_separable_conv(net, stride, operation, filter_size):
   for layer_num in range(num_layers - 1):
     net = tf.nn.relu(net)
     net = slim.separable_conv2d(
-        net,
-        filter_size,
-        kernel_size,
-        depth_multiplier=1,
-        scope='separable_{0}x{0}_{1}'.format(kernel_size, layer_num + 1),
-        stride=stride)
-    net = slim.batch_norm(
-        net, scope='bn_sep_{0}x{0}_{1}'.format(kernel_size, layer_num + 1))
-    stride = 1
-  net = tf.nn.relu(net)
-  net = slim.separable_conv2d(
       net,
       filter_size,
       kernel_size,
       depth_multiplier=1,
-      scope='separable_{0}x{0}_{1}'.format(kernel_size, num_layers),
+      scope='separable_{0}x{0}_{1}'.format(kernel_size, layer_num + 1),
       stride=stride)
+    net = slim.batch_norm(
+      net, scope='bn_sep_{0}x{0}_{1}'.format(kernel_size, layer_num + 1))
+    stride = 1
+  net = tf.nn.relu(net)
+  net = slim.separable_conv2d(
+    net,
+    filter_size,
+    kernel_size,
+    depth_multiplier=1,
+    scope='separable_{0}x{0}_{1}'.format(kernel_size, num_layers),
+    stride=stride)
   net = slim.batch_norm(
-      net, scope='bn_sep_{0}x{0}_{1}'.format(kernel_size, num_layers))
+    net, scope='bn_sep_{0}x{0}_{1}'.format(kernel_size, num_layers))
   return net
 
 
@@ -270,11 +269,11 @@ class NasNetABaseCell(object):
     if curr_filter_shape != prev_filter_shape:
       prev_layer = tf.nn.relu(prev_layer)
       prev_layer = factorized_reduction(
-          prev_layer, curr_num_filters, stride=2)
+        prev_layer, curr_num_filters, stride=2)
     elif curr_num_filters != prev_num_filters:
       prev_layer = tf.nn.relu(prev_layer)
       prev_layer = slim.conv2d(
-          prev_layer, curr_num_filters, 1, scope='prev_1x1')
+        prev_layer, curr_num_filters, 1, scope='prev_1x1')
       prev_layer = slim.batch_norm(prev_layer, scope='prev_bn')
     return prev_layer
 
@@ -290,7 +289,7 @@ class NasNetABaseCell(object):
     net = slim.batch_norm(net, scope='beginning_bn')
     split_axis = get_channel_index()
     net = tf.split(
-        axis=split_axis, num_or_size_splits=1, value=net)
+      axis=split_axis, num_or_size_splits=1, value=net)
     for split in net:
       assert int(split.shape[split_axis] == int(self._num_conv_filters *
                                                 self._filter_scaling))
@@ -310,15 +309,15 @@ class NasNetABaseCell(object):
       for iteration in range(5):
         with tf.variable_scope('comb_iter_{}'.format(iteration)):
           left_hiddenstate_idx, right_hiddenstate_idx = (
-              self._hiddenstate_indices[i],
-              self._hiddenstate_indices[i + 1])
+            self._hiddenstate_indices[i],
+            self._hiddenstate_indices[i + 1])
           original_input_left = left_hiddenstate_idx < 2
           original_input_right = right_hiddenstate_idx < 2
           h1 = net[left_hiddenstate_idx]
           h2 = net[right_hiddenstate_idx]
 
           operation_left = self._operations[i]
-          operation_right = self._operations[i+1]
+          operation_right = self._operations[i + 1]
           i += 2
           # Apply conv operations
           with tf.variable_scope('left'):
@@ -388,10 +387,10 @@ class NasNetABaseCell(object):
         stride = 2 if final_height != curr_height else 1
         with tf.variable_scope('reduction_{}'.format(idx)):
           net[idx] = factorized_reduction(
-              net[idx], final_num_filters, stride)
+            net[idx], final_num_filters, stride)
 
     states_to_combine = (
-        [h for h, is_used in zip(net, used_hiddenstates) if not is_used])
+      [h for h, is_used in zip(net, used_hiddenstates) if not is_used])
 
     # Return the concat of all the states
     concat_axis = get_channel_index()
@@ -406,7 +405,7 @@ class NasNetABaseCell(object):
       assert self._cell_num != -1
       # The added 2 is for the reduction cells
       num_cells = self._total_num_cells
-      layer_ratio = (self._cell_num + 1)/float(num_cells)
+      layer_ratio = (self._cell_num + 1) / float(num_cells)
       with tf.device('/cpu:0'):
         tf.summary.scalar('layer_ratio', layer_ratio)
       drop_path_keep_prob = 1 - layer_ratio * (1 - drop_path_keep_prob)
@@ -415,12 +414,12 @@ class NasNetABaseCell(object):
                              tf.float32)
       drop_path_burn_in_steps = self._total_training_steps
       current_ratio = (
-          current_step / drop_path_burn_in_steps)
+        current_step / drop_path_burn_in_steps)
       current_ratio = tf.minimum(1.0, current_ratio)
       with tf.device('/cpu:0'):
         tf.summary.scalar('current_ratio', current_ratio)
       drop_path_keep_prob = (
-          1 - current_ratio * (1 - drop_path_keep_prob))
+        1 - current_ratio * (1 - drop_path_keep_prob))
       with tf.device('/cpu:0'):
         tf.summary.scalar('drop_path_keep_prob', drop_path_keep_prob)
       net = drop_path(net, drop_path_keep_prob)

@@ -45,10 +45,11 @@ def get_restored_vars(exclusions):
 model_config = ModelConfig(model_name='inception_resnet_v2',
                            dropout_keep_prob=0.30,
                            img_shape=(299, 299, 3),
-                           batch_size=8,
+                           batch_size=16,
                            max_epoch=50,
-                           train_data_path='data/tfdata/2017-12-20 11:50:22.793129/bc_train.tfrecords',
-                           test_data_path='data/tfdata/2017-12-20 11:50:22.793129/bc_test.tfrecords')
+                           plot_batch=25,
+                           train_data_path='data/tfdata/2017-12-21 09:16:26.834932/bc_train.tfrecords',
+                           test_data_path='data/tfdata/2017-12-21 09:16:26.834932/bc_test.tfrecords')
 
 # get logging
 model_config.model_log_path = 'logs/{}_{}.log'.format(model_config.model_name, str(datetime.datetime.now()))
@@ -61,7 +62,7 @@ test_batch_images, test_batch_labels = get_shuffle_batch(model_config.test_data_
                                                          name='test_shuffle_batch')
 
 # set train
-model_config.train_data_length = 4704
+model_config.train_data_length = 1568
 model_config.test_data_length = 672
 
 model = None
@@ -82,7 +83,7 @@ elif model_config.model_name == 'inception_v2':
   model_save_prefix = 'saved_models/inception_v2_' + str(datetime.datetime.now()) + '/'
 elif model_config.model_name == 'nasnet_large':
   model = NASNetLargeModel(model_config)
-  unrestored_var_list = ['NASNet/Logits/', 'Adadelta']
+  unrestored_var_list = ['aux_logits/', 'Adadelta', 'global_step']
   model_path = 'pretrained_models/model.ckpt'
   model_save_prefix = 'saved_models/nasnet_large_' + str(datetime.datetime.now()) + '/'
 

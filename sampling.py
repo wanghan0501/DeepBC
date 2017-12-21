@@ -87,7 +87,7 @@ def sampling():
   # write train tfrecords
   write_to_tfrecord(TF_DIR + "bc_train.tfrecords",
                     datas=train_label['pic_name'].apply(lambda x: IMAGE_DIR + x).tolist(),
-                    labels=train_label['label'].tolist(), img_shape=IMAGE_SHAPE, data_expand=True, expand_rate=2,
+                    labels=train_label['label'].tolist(), img_shape=IMAGE_SHAPE, data_expand=False, expand_rate=2,
                     logger=logger)
   # write test tfrecords
   write_to_tfrecord(TF_DIR + "bc_test.tfrecords",
