@@ -356,6 +356,13 @@ def inception_resnet_v2(inputs, num_classes=1001, is_training=True,
         net = slim.dropout(net, dropout_keep_prob, is_training=is_training,
                            scope='Dropout')
         end_points['PreLogitsFlatten'] = net
+
+        # add another connection
+        net = slim.fully_connected(net, 512, activation_fn=None, scope="fc_512_a")
+        # net = slim.dropout(net,dropout_keep_prob,is_training=is_training,scope="Dropout_b")
+        # net = slim.fully_connected(net,256,activation_fn=None,scope='fc_256_b')
+        # net = slim.dropout(net, dropout_keep_prob, is_training=is_training, scope="Dropout_c")
+
         logits = slim.fully_connected(net, num_classes, activation_fn=None,
                                       scope='Logits')
         end_points['Logits'] = logits

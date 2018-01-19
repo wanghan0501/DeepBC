@@ -25,7 +25,7 @@ class ModelConfig():
                train_data_length=0,
                validation_data_length=0,
                test_data_length=0,
-               num_threads=1,
+               num_threads=2,
                model_name='inception_resnet_v2',
                use_tensorboard=False):
     self.train_data_path = train_data_path
@@ -45,24 +45,26 @@ class ModelConfig():
     self.use_tensorboard = use_tensorboard
 
   def __str__(self):
-    str = '\n**********\n' \
-          'Model Configuration Parameters as Following:\n' \
-          'model_log_path:\t {}\n' \
-          'train_data_path:\t {}\n' \
-          'test_data_path:\t {}\n' \
-          'batch_size:\t{} \n' \
-          'num_classes:\t{}\n' \
-          'max_epoch:\t{}\n' \
-          'plot_batch:\t{}\n' \
-          'img_shape:\t{}\n' \
-          'dropout_keep_prob:\t{}\n' \
-          'train_data_length:\t{}\n' \
-          'validation_data_length:\t{}\n' \
-          'test_data_length is:\t{}\n' \
-          'num_threads:\t{}\n' \
-          'model_name:\t{}\n' \
-          'use_tensorboard:\t{}\n' \
-          '**********\n'.format(
+    str = '''
+************
+Model Configuration Parameters as Following:
+model_log_path:\t{}
+train_data_path:\t{}
+test_data_path:\t{}
+batch_size:\t{}
+num_classes:\t{}
+max_epoch:\t{}
+plot_batch:\t{}
+img_shape:\t{}
+dropout_keep_prob:\t{}
+train_data_length:\t{}
+validation_data_length:\t{}
+test_data_length is:\t{}
+num_threads:\t{}
+model_name:\t{}
+use_tensorboard:\t{}
+***********
+'''.format(
       self.model_log_path,
       self.train_data_path,
       self.test_data_path,

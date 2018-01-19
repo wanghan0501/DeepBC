@@ -23,11 +23,11 @@ class InceptionResnetV2Model(object):
     self._config = config
     self._input_shape = (config.batch_size,) + config.img_shape
     self._output_shape = (config.batch_size,)
-    self._create_placeholders()
     self._use_tensorboard = self._config.use_tensorboard
+    self._create_placeholders()
     with slim.arg_scope(inception_resnet_v2_arg_scope(batch_norm_decay=0.99)):
-      self._create_train_model()
-      self._create_test_model()
+        self._create_train_model()
+        self._create_test_model()
 
   def _create_placeholders(self):
     self.input_data = tf.placeholder(tf.float32, shape=self._input_shape, name='input_data')

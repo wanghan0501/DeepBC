@@ -17,9 +17,9 @@ from sklearn.model_selection import train_test_split
 from tfrecord import write_to_tfrecord
 from utils import Logger
 
-SAMPLING_RATE = 0.7
-IMAGE_DIR = "data/bc_datasets/breast/"
-LABEL_DIR = "data/bc_datasets/labels_benign.txt"
+SAMPLING_RATE = 0.8
+IMAGE_DIR = "data/breast_1014&1015&1121/"
+LABEL_DIR = "data/labels_1014&1015&1121.txt"
 TF_DIR_PREFIX = 'data/tfdata/'
 IMAGE_SHAPE = (299, 299, 3)
 
@@ -40,14 +40,11 @@ def load_data():
 
 def sampling():
     label_data = load_data()
-    negative_label = label_data.loc[label_data['label'] == 0, :]
-    positive_label = label_data.loc[label_data['label'] == 1, :]
-
     # sampling
     train_X, test_X, train_Y, test_Y = train_test_split(label_data['pic_name'], label_data['label'],
                                                         test_size=1 - SAMPLING_RATE)
 
-    TF_DIR = TF_DIR_PREFIX + str(datetime.datetime.now()) + '/'
+    TF_DIR = TF_DIR_PREFIX + datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S") + '/'
 
     # create data dir
     if not os.path.exists(TF_DIR):
@@ -55,7 +52,7 @@ def sampling():
 
     logger = Logger(filename=TF_DIR + 'tf_sampling.log').get_logger()
     logger.info('SAMPLING LOG')
-    logger.info('sampling rate: 0.8')
+    logger.info('sampling rate: {}'.format(SAMPLING_RATE))
     logger.info('image dir: ' + IMAGE_DIR)
     logger.info('lable idr: ' + LABEL_DIR)
     logger.info('image shape: {}'.format(IMAGE_SHAPE))
@@ -73,7 +70,7 @@ def sampling():
     # write train tfrecords
     write_to_tfrecord(TF_DIR + "bc_train.tfrecords",
                       datas=train_X.apply(lambda x: IMAGE_DIR + x).tolist(),
-                      labels=train_Y.tolist(), img_shape=IMAGE_SHAPE, data_expand=False, expand_rate=2,
+                      labels=train_Y.tolist(), img_shape=IMAGE_SHAPE, data_expand=False, expand_rate=1,
                       logger=logger)
     # write test tfrecords
     write_to_tfrecord(TF_DIR + "bc_test.tfrecords",
