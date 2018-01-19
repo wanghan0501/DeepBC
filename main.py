@@ -19,7 +19,7 @@ from model import InceptionResnetV2Model, InceptionV2Model, NASNetLargeModel
 from tfrecord import get_shuffle_batch
 from utils import Logger, ModelConfig
 
-os.environ["CUDA_VISIBLE_DEVICES"] = ['0', '1']
+os.environ["CUDA_VISIBLE_DEVICES"] = "0,1"
 config_gpu = tf.ConfigProto()
 config_gpu.gpu_options.allow_growth = True
 
@@ -67,10 +67,6 @@ test_batch_images, test_batch_labels = get_shuffle_batch(model_config.test_data_
 model_config.train_data_length = 2972
 model_config.test_data_length = 743
 
-model = None
-unrestored_var_list = None
-model_path = None
-model_save_prefix = None
 if model_config.model_name == 'inception_resnet_v2':
     model = InceptionResnetV2Model(model_config)
     # unrestored_var_list = ['InceptionResnetV2/Logits/', ]
@@ -126,26 +122,31 @@ with tf.Session(config=config_gpu) as sess:
 
     max_test_acc, max_test_acc_epoch = 0, 0
     for epoch_idx in range(model_config.max_epoch):
-        # train
-        train_acc_array = []
-        train_loss_array = []
 
+        # train
         for batch_idx in range(int(model_config.train_data_length / model_config.batch_size)):
             curr_train_image, curr_train_label = sess.run([train_batch_images, train_batch_labels])
-            _, curr_train_acc, curr_loss = sess.run([model.train_op, model.train_accuracy, model.train_loss],
-                                                    feed_dict={model.input_data: curr_train_image,
-                                                               model.label: curr_train_label})
+            _ = sess.run([model.train_op], feed_dict={model.input_data: curr_train_image,
+                                                      model.label: curr_train_label})
+
+        # test train
+        train_acc_array = []
+        train_loss_array = []
+        for batch_idx in range(int(model_config.train_data_length / model_config.batch_size)):
+            curr_train_image, curr_train_label = sess.run([train_batch_images, train_batch_labels])
+            curr_train_acc, curr_loss = sess.run([model.test_accuracy, model.test_loss],
+                                                 feed_dict={model.input_data: curr_train_image,
+                                                            model.label: curr_train_label})
             train_acc_array.append(curr_train_acc)
             train_loss_array.append(curr_loss)
-
             if batch_idx % model_config.plot_batch == 0:
                 # if model_config.use_tensorboard:
                 #   writer.add_summary(curr_summary, epoch_idx * model_config.max_epoch + batch_idx)
-                logger.info('Epoch {} train loss is: {:.4f}, train accuracy is {:.4f}'.format(epoch_idx,
-                                                                                              np.average(
-                                                                                                  train_loss_array),
-                                                                                              np.average(
-                                                                                                  train_acc_array)))
+                logger.info('Epoch {} train loss is: {:.4f}, train accuracy is {:.4f}'.format(
+                    epoch_idx,
+                    np.average(train_loss_array),
+                    np.average(train_acc_array)))
+
         # test
         test_acc_array = []
         test_loss_array = []
