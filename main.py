@@ -19,10 +19,9 @@ from model import InceptionResnetV2Model, InceptionV2Model, NASNetLargeModel
 from tfrecord import get_shuffle_batch
 from utils import Logger, ModelConfig
 
-# os.environ["CUDA_VISIBLE_DEVICES"] = '1'
-# config_gpu = tf.ConfigProto()
-# config_gpu.gpu_options.per_process_gpu_memory_fraction = 0.5
-# config_gpu.gpu_options.allow_growth = True
+os.environ["CUDA_VISIBLE_DEVICES"] = ['0', '1']
+config_gpu = tf.ConfigProto()
+config_gpu.gpu_options.allow_growth = True
 
 LOGDIR = 'summary/'
 
@@ -104,7 +103,7 @@ model_config_info = str(model_config) + \
 # logging model config
 logger.info(model_config_info)
 
-with tf.Session() as sess:
+with tf.Session(config=config_gpu) as sess:
     tf.global_variables_initializer().run()
     tf.local_variables_initializer().run()
     variables_to_restore = get_restored_vars(unrestored_var_list)
