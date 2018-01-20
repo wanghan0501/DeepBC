@@ -9,8 +9,8 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import print_function
 
-import datetime
 import os
+from datetime import datetime
 
 import numpy as np
 import tensorflow as tf
@@ -24,6 +24,8 @@ config_gpu = tf.ConfigProto()
 config_gpu.gpu_options.allow_growth = True
 
 LOGDIR = 'summary/'
+
+cur_run_time = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
 
 
 def get_restored_vars(exclusions):
@@ -52,8 +54,7 @@ model_config = ModelConfig(model_name='inception_resnet_v2',
                            test_data_path='tfdata/train_1&2&4&5_test_3/bc_test.tfrecords')
 
 # get logging
-model_config.model_log_path = 'logs/{}_{}.log'.format(model_config.model_name,
-                                                      datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S"))
+model_config.model_log_path = 'logs/{}_{}.log'.format(model_config.model_name, cur_run_time)
 logger = Logger(filename=model_config.model_log_path).get_logger()
 # get train batch data
 train_batch_images, train_batch_labels = get_shuffle_batch(model_config.train_data_path, model_config,
@@ -74,13 +75,12 @@ if model_config.model_name == 'inception_resnet_v2':
     model = InceptionResnetV2Model(model_config)
     unrestored_var_list = ['InceptionResnetV2/AuxLogits/', 'InceptionResnetV2/Logits/', 'Adadelta']
     model_path = 'pretrained_models/inception_resnet_v2.ckpt'
-    model_save_prefix = 'saved_models/inception_resnet_v2_' + datetime.datetime.now().strftime(
-        "%Y-%m-%d %H:%M:%S") + '/'
+    model_save_prefix = 'saved_models/inception_resnet_v2_' + cur_run_time + '/'
 elif model_config.model_name == 'inception_v2':
     model = InceptionV2Model(model_config)
     unrestored_var_list = ['InceptionV2/Logits/', 'Adadelta', '_power']
     model_path = 'pretrained_models/inception_v2.ckpt'
-    model_save_prefix = 'saved_models/inception_v2_' + datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S") + '/'
+    model_save_prefix = 'saved_models/inception_v2_' + cur_run_time + '/'
 
 if not os.path.exists(model_save_prefix):
     os.mkdir(model_save_prefix)
@@ -96,9 +96,10 @@ model_config_info = str(model_config) + \
 # logging model config
 logger.info(model_config_info)
 
-with tf.Session() as sess:
+with tf.Session(config=config_gpu) as sess:
     tf.global_variables_initializer().run()
     tf.local_variables_initializer().run()
+    # restore variables
     variables_to_restore = get_restored_vars(unrestored_var_list)
     restorer = tf.train.Saver(variables_to_restore)
     restorer.restore(sess, model_path)
