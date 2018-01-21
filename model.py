@@ -52,7 +52,7 @@ class InceptionResnetV2Model(object):
         # get curr accuracy
         train_accuracy = tf.reduce_mean(tf.cast(tf.equal(tf.cast(self.label, tf.int64), train_classes), tf.float32),
                                         name='train_accuracy')
-        train_confusion_matrix = tf.contrib.metrics.confusion_matrix(self.label, train_classes)
+        train_confusion_matrix = tf.confusion_matrix(self.label, train_classes, num_classes=self._config.num_classes)
 
         self.train_loss = train_loss
         self.train_op = train_op
@@ -80,7 +80,7 @@ class InceptionResnetV2Model(object):
         # get curr accuracy
         test_accuracy = tf.reduce_mean(tf.cast(tf.equal(tf.cast(self.label, tf.int64), test_classes), tf.float32),
                                        name='test_accuracy')
-        test_confusion_matrix = tf.contrib.metrics.confusion_matrix(self.label, test_classes)
+        test_confusion_matrix = tf.confusion_matrix(self.label, test_classes, num_classes=self._config.num_classes)
 
         self.test_loss = test_loss
         self.test_accuracy = test_accuracy
@@ -125,7 +125,7 @@ class InceptionV2Model(object):
         # get curr accuracy
         train_accuracy = tf.reduce_mean(tf.cast(tf.equal(tf.cast(self.label, tf.int64), train_classes), tf.float32),
                                         name='train_accuracy')
-        train_confusion_matrix = tf.contrib.metrics.confusion_matrix(self.label, train_classes)
+        train_confusion_matrix = tf.confusion_matrix(self.label, train_classes, num_classes=self._config.num_classes)
 
         self.train_loss = train_loss
         self.train_op = train_op
@@ -153,7 +153,7 @@ class InceptionV2Model(object):
         # get curr accuracy
         test_accuracy = tf.reduce_mean(tf.cast(tf.equal(tf.cast(self.label, tf.int64), test_classes), tf.float32),
                                        name='test_accuracy')
-        test_confusion_matrix = tf.contrib.metrics.confusion_matrix(self.label, test_classes)
+        test_confusion_matrix = tf.confusion_matrix(self.label, test_classes, num_classes=self._config.num_classes)
 
         self.test_loss = test_loss
         self.test_accuracy = test_accuracy
