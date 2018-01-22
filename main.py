@@ -14,6 +14,7 @@ from datetime import datetime
 
 import numpy as np
 import tensorflow as tf
+from tqdm import tqdm
 
 from model import InceptionResnetV2Model, InceptionV2Model
 from tfrecord import get_shuffle_batch
@@ -22,8 +23,6 @@ from utils import Logger, ModelConfig
 os.environ["CUDA_VISIBLE_DEVICES"] = '0'
 config_gpu = tf.ConfigProto()
 config_gpu.gpu_options.allow_growth = True
-
-LOGDIR = 'summary/'
 
 cur_run_time = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
 
@@ -51,7 +50,8 @@ model_config = ModelConfig(model_name='inception_resnet_v2',
                            max_epoch=200,
                            plot_batch=25,
                            train_data_path='tfdata/train_1&2&4&5_test_3/bc_train.tfrecords',
-                           test_data_path='tfdata/train_1&2&4&5_test_3/bc_test.tfrecords')
+                           test_data_path='tfdata/train_1&2&4&5_test_3/bc_test.tfrecords',
+                           tensorboard_summary_path='summary/')
 
 # get logging
 model_config.model_log_path = 'logs/{}_{}.log'.format(model_config.model_name, cur_run_time)
@@ -67,46 +67,34 @@ test_batch_images, test_batch_labels = get_shuffle_batch(model_config.test_data_
 model_config.train_data_length = 4416
 model_config.test_data_length = 1104
 
-model = None
-unrestored_var_list = None
-model_path = None
-model_save_prefix = None
 if model_config.model_name == 'inception_resnet_v2':
     model = InceptionResnetV2Model(model_config)
-    unrestored_var_list = ['InceptionResnetV2/AuxLogits/', 'InceptionResnetV2/Logits/', 'Adadelta']
-    model_path = 'pretrained_models/inception_resnet_v2.ckpt'
-    model_save_prefix = 'saved_models/inception_resnet_v2_' + cur_run_time + '/'
+    model_config.unrestored_var_list = ['InceptionResnetV2/AuxLogits/', 'InceptionResnetV2/Logits/', 'Adadelta']
+    model_config.pretrained_model_path = 'pretrained_models/inception_resnet_v2.ckpt'
+    model_config.model_save_prefix = 'saved_models/inception_resnet_v2_' + cur_run_time + '/'
 elif model_config.model_name == 'inception_v2':
     model = InceptionV2Model(model_config)
-    unrestored_var_list = ['InceptionV2/Logits/', 'Adadelta', '_power']
-    model_path = 'pretrained_models/inception_v2.ckpt'
-    model_save_prefix = 'saved_models/inception_v2_' + cur_run_time + '/'
+    model_config.unrestored_var_list = ['InceptionV2/Logits/', 'Adadelta', '_power']
+    model_config.pretrained_model_path = 'pretrained_models/inception_v2.ckpt'
+    model_config.model_save_prefix = 'saved_models/inception_v2_' + cur_run_time + '/'
 
-if not os.path.exists(model_save_prefix):
-    os.mkdir(model_save_prefix)
-model_config_info = str(model_config) + \
-                    "unrestored_var_list:\t{}\n" \
-                    "model_path:\t{}\n" \
-                    "model_save_prefix:\t{}\n" \
-                    "**********\n".format(
-                        unrestored_var_list,
-                        model_path,
-                        model_save_prefix
-                    )
+if not os.path.exists(model_config.model_save_prefix):
+    os.mkdir(model_config.model_save_prefix)
+
 # logging model config
-logger.info(model_config_info)
+logger.info(str(model_config))
 
 with tf.Session(config=config_gpu) as sess:
     tf.global_variables_initializer().run()
     tf.local_variables_initializer().run()
     # restore variables
-    variables_to_restore = get_restored_vars(unrestored_var_list)
+    variables_to_restore = get_restored_vars(model_config.unrestored_var_list)
     restorer = tf.train.Saver(variables_to_restore)
-    restorer.restore(sess, model_path)
+    restorer.restore(sess, model_config.pretrained_model_path)
 
     if model_config.use_tensorboard:
         # writer
-        writer = tf.summary.FileWriter(LOGDIR)
+        writer = tf.summary.FileWriter(model_config.tensorboard_summary_path)
         writer.add_graph(sess.graph)
 
     trainable = 0
@@ -121,7 +109,7 @@ with tf.Session(config=config_gpu) as sess:
     max_test_acc, max_test_acc_epoch = 0, 0
     for epoch_idx in range(model_config.max_epoch):
         # train op
-        for batch_idx in range(int(model_config.train_data_length / model_config.batch_size)):
+        for batch_idx in tqdm(range(int(model_config.train_data_length / model_config.batch_size))):
             curr_train_image, curr_train_label = sess.run([train_batch_images, train_batch_labels])
             _ = sess.run([model.train_op], feed_dict={model.input_data: curr_train_image,
                                                       model.label: curr_train_label})
@@ -130,7 +118,7 @@ with tf.Session(config=config_gpu) as sess:
         train_acc_array = []
         train_loss_array = []
         train_confusion_matrix = np.zeros([2, 2], dtype=int)
-        for batch_idx in range(int(model_config.train_data_length / model_config.batch_size)):
+        for batch_idx in tqdm(range(int(model_config.train_data_length / model_config.batch_size))):
             curr_train_image, curr_train_label = sess.run([train_batch_images, train_batch_labels])
             curr_train_acc, curr_train_loss, curr_train_confusion_matrix = sess.run(
                 [model.test_accuracy, model.test_loss, model.test_confusion_matrix],
@@ -151,7 +139,7 @@ with tf.Session(config=config_gpu) as sess:
         test_acc_array = []
         test_loss_array = []
         test_confusion_matrix = np.zeros([2, 2], dtype=int)
-        for batch_idx in range(int(model_config.test_data_length / model_config.batch_size)):
+        for batch_idx in tqdm(range(int(model_config.test_data_length / model_config.batch_size))):
             curr_test_image, curr_test_label = sess.run([test_batch_images, test_batch_labels])
             cur_test_loss, cur_test_acc, cur_test_confusion_matrix = sess.run(
                 [model.test_loss, model.test_accuracy, model.test_confusion_matrix],
@@ -167,7 +155,9 @@ with tf.Session(config=config_gpu) as sess:
         if max_test_acc < avg_test_acc:
             max_test_acc_epoch = epoch_idx
             max_test_acc = avg_test_acc
-            model_save_path = model_save_prefix + 'epoch_{}_acc_{:.6f}.ckpt'.format(epoch_idx, avg_test_acc)
+            model_save_path = model_config.model_save_prefix + 'epoch_{}_acc_{:.6f}.ckpt'.format(
+                epoch_idx,
+                avg_test_acc)
             save_path = saver.save(sess, model_save_path)
             print('Epoch {} model has been saved with test accuracy is {:.6f}'.format(epoch_idx, avg_test_acc))
 
