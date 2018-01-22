@@ -102,7 +102,7 @@ model_save_prefix:\t{}
 
 class Logger():
     def __init__(self, filename, level=logging.INFO,
-                 format='%(asctime)s %(filename)s[line:%(lineno)d] %(levelname)s %(message)s',
+                 format='%(asctime)s %(levelname)s %(message)s',
                  datefmt='%a, %d %b %Y %H:%M:%S', filemode='w'):
         self.level = level
         self.format = format
@@ -116,7 +116,7 @@ class Logger():
                             filemode=self.filemode)
         self._set_streaming_handler()
 
-    def _set_streaming_handler(self, level=logging.INFO, formatter='%(name)-12s: %(levelname)-8s %(message)s'):
+    def _set_streaming_handler(self, level=logging.INFO, formatter='%(asctime)s: %(levelname)-8s %(message)s'):
         # 定义一个StreamHandler，将INFO级别或更高的日志信息打印到标准错误，并将其添加到当前的日志处理对象#
         console = logging.StreamHandler()
         console.setLevel(level)

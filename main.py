@@ -34,7 +34,6 @@ def get_restored_vars(exclusions):
         for exclusion in exclusions:
             if exclusion in var.op.name:
                 excluded = True
-                # print(var)
                 break
         if not excluded:
             variables_to_restore.append(var)
