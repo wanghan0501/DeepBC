@@ -58,11 +58,11 @@ logger = Logger(filename=model_config.model_log_path).get_logger()
 # get train batch data
 train_batch_images, train_batch_labels = get_shuffle_batch(model_config.train_data_path, model_config,
                                                            name='train_shuffle_batch')
-test_train_batch_images, test_train_batch_labels = get_batch(model_config.train_data_path, model_config,
-                                                             name='train_batch')
+estimate_train_images, estimate_train_labels = get_batch(model_config.train_data_path, model_config,
+                                                         name='train_batch')
 # get test batch data
-test_batch_images, test_batch_labels = get_batch(model_config.test_data_path, model_config,
-                                                 name='test_batch')
+estimate_test_images, estimate_test_labels = get_batch(model_config.test_data_path, model_config,
+                                                       name='test_batch')
 
 # set train
 model_config.train_data_length = 4416
@@ -115,12 +115,12 @@ with tf.Session(config=config_gpu) as sess:
             _ = sess.run([model.train_op], feed_dict={model.input_data: curr_train_image,
                                                       model.label: curr_train_label})
 
-        # test 'train' progress
+        # estimate 'train' progress
         train_acc_array = []
         train_loss_array = []
         train_confusion_matrix = np.zeros([2, 2], dtype=int)
         for batch_idx in tqdm(range(int(model_config.train_data_length / model_config.batch_size))):
-            curr_train_image, curr_train_label = sess.run([test_train_batch_images, test_train_batch_labels])
+            curr_train_image, curr_train_label = sess.run([estimate_train_images, estimate_train_labels])
             curr_train_acc, curr_train_loss, curr_train_confusion_matrix = sess.run(
                 [model.test_accuracy, model.test_loss, model.test_confusion_matrix],
                 feed_dict={model.input_data: curr_train_image, model.label: curr_train_label})
@@ -136,12 +136,12 @@ with tf.Session(config=config_gpu) as sess:
             np.average(train_loss_array),
             np.average(train_acc_array)))
 
-        # test 'test' progress
+        # estimate 'test' progress
         test_acc_array = []
         test_loss_array = []
         test_confusion_matrix = np.zeros([2, 2], dtype=int)
         for batch_idx in tqdm(range(int(model_config.test_data_length / model_config.batch_size))):
-            curr_test_image, curr_test_label = sess.run([test_batch_images, test_batch_labels])
+            curr_test_image, curr_test_label = sess.run([estimate_test_images, estimate_test_labels])
             cur_test_loss, cur_test_acc, cur_test_confusion_matrix = sess.run(
                 [model.test_loss, model.test_accuracy, model.test_confusion_matrix],
                 feed_dict={model.input_data: curr_test_image,
