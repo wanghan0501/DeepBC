@@ -58,11 +58,12 @@ logger = Logger(filename=model_config.model_log_path).get_logger()
 # get train batch data
 train_batch_images, train_batch_labels = get_shuffle_batch(model_config.train_data_path, model_config,
                                                            name='train_shuffle_batch')
+# estimate 'train' progress batch data
 estimate_train_images, estimate_train_labels = get_batch(model_config.train_data_path, model_config,
-                                                         name='train_batch')
-# get test batch data
+                                                         name='estimate_train_batch')
+# estimate 'test' progress batch data
 estimate_test_images, estimate_test_labels = get_batch(model_config.test_data_path, model_config,
-                                                       name='test_batch')
+                                                       name='estimate_test_batch')
 
 # set train
 model_config.train_data_length = 4416
@@ -111,24 +112,24 @@ with tf.Session(config=config_gpu) as sess:
     for epoch_idx in range(model_config.max_epoch):
         # train op
         for batch_idx in tqdm(range(int(model_config.train_data_length / model_config.batch_size))):
-            curr_train_image, curr_train_label = sess.run([train_batch_images, train_batch_labels])
-            _ = sess.run([model.train_op], feed_dict={model.input_data: curr_train_image,
-                                                      model.label: curr_train_label})
+            cur_train_images, cur_train_labels = sess.run([train_batch_images, train_batch_labels])
+            _ = sess.run([model.train_op],
+                         feed_dict={model.input_data: cur_train_images,
+                                    model.label: cur_train_labels})
 
         # estimate 'train' progress
         train_acc_array = []
         train_loss_array = []
         train_confusion_matrix = np.zeros([2, 2], dtype=int)
         for batch_idx in tqdm(range(int(model_config.train_data_length / model_config.batch_size))):
-            curr_train_image, curr_train_label = sess.run([estimate_train_images, estimate_train_labels])
-            curr_train_acc, curr_train_loss, curr_train_confusion_matrix = sess.run(
+            cur_train_images, cur_train_labels = sess.run([estimate_train_images, estimate_train_labels])
+            cur_train_acc, cur_train_loss, cur_train_confusion_matrix = sess.run(
                 [model.test_accuracy, model.test_loss, model.test_confusion_matrix],
-                feed_dict={model.input_data: curr_train_image, model.label: curr_train_label})
-
-            train_acc_array.append(curr_train_acc)
-            train_loss_array.append(curr_train_loss)
-            train_confusion_matrix += curr_train_confusion_matrix
-
+                feed_dict={model.input_data: cur_train_images,
+                           model.label: cur_train_labels})
+            train_acc_array.append(cur_train_acc)
+            train_loss_array.append(cur_train_loss)
+            train_confusion_matrix += cur_train_confusion_matrix
         [[TN, FP], [FN, TP]] = train_confusion_matrix
         logger.info('[Train] Epoch:{}, TP:{}, TN:{}, FP:{}, FN:{}, Loss:{:.6f}, Accuracy:{:.6f}'.format(
             epoch_idx,
@@ -141,11 +142,11 @@ with tf.Session(config=config_gpu) as sess:
         test_loss_array = []
         test_confusion_matrix = np.zeros([2, 2], dtype=int)
         for batch_idx in tqdm(range(int(model_config.test_data_length / model_config.batch_size))):
-            curr_test_image, curr_test_label = sess.run([estimate_test_images, estimate_test_labels])
+            cur_test_images, cur_test_labels = sess.run([estimate_test_images, estimate_test_labels])
             cur_test_loss, cur_test_acc, cur_test_confusion_matrix = sess.run(
                 [model.test_loss, model.test_accuracy, model.test_confusion_matrix],
-                feed_dict={model.input_data: curr_test_image,
-                           model.label: curr_test_label})
+                feed_dict={model.input_data: cur_test_images,
+                           model.label: cur_test_labels})
             test_acc_array.append(cur_test_acc)
             test_loss_array.append(cur_test_loss)
             test_confusion_matrix += cur_test_confusion_matrix
@@ -171,6 +172,6 @@ with tf.Session(config=config_gpu) as sess:
             max_test_acc,
             max_test_acc_epoch))
 
-    print('Final epoch has been finished!')
+    print('Moddel {} final epoch has been finished!'.format(model_config.model_name))
     coord.request_stop()
     coord.join(threads)
